@@ -183,6 +183,7 @@ export const getChatInfoMockData = async (
     },
     data: {
       chatInfo: {
+        userId: "123",
         chatId,
         chatName: `Chat ${chatId}`,
         messages,
@@ -199,6 +200,7 @@ export const getUserInfoMockData = {
   },
   data: {
     userInfo: {
+      id: "123",
       username: "Gorlock the Destroyer",
       email: "gorlock.destroyer@e.nut.edu.sg",
       avatar: DefaultUserAvatar,

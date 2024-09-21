@@ -14,12 +14,14 @@ export interface ChatListModel {
 }
 
 export interface ChatInfoModel {
+  userId: string;
   chatId: string;
   chatName: string;
   messages: ChatMessageModel[];
 }
 
 export interface UserInfoModel {
+  id: string;
   username: string;
   email: string;
   avatar: string;

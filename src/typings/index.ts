@@ -21,3 +21,7 @@ export interface HTTPStatusBody {
   code: number | string;
   message?: string;
 }
+
+export interface HTTPResponseErrorWrapper {
+  error?: string;
+}
