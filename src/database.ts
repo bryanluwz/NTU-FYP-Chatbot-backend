@@ -95,8 +95,8 @@ const insertMockData = () => {
       userId: "123",
       chatName: "Chat 2",
       messages: [
-        { messageId: "3", userType: UserTypeEnum.AI, message: "Hello!" },
-        { messageId: "4", userType: UserTypeEnum.User, message: "Hi!" },
+        { messageId: "3", userType: UserTypeEnum.AI, message: "nun!" },
+        { messageId: "4", userType: UserTypeEnum.User, message: "notsu!" },
       ],
     },
   ];

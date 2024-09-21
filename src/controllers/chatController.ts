@@ -2,10 +2,14 @@ import { Request, Response } from "express";
 import {
   getChatInfoMockData,
   getChatListMockData,
+  getMockResponseMessage,
   getUserInfoMockData,
   postQueryMessageMockData,
 } from "./mockdata";
 import {
+  ChatInfoModel,
+  ChatListModel,
+  ChatMessageModel,
   GetChatListResponseModel,
   GetUserInfoResponseModel,
   UserInfoModel,
@@ -13,15 +17,41 @@ import {
 
 import db from "../database";
 import { HTTPResponseErrorWrapper } from "../typings";
+import { UserTypeEnum } from "../typings/enums";
 
 const DefaultUserAvatar = "src/assets/user-avatar-default.png";
 
 // Example of getting users
 export const getChatList = (
   req: Request,
-  res: Response<GetChatListResponseModel>
+  res: Response<GetChatListResponseModel | HTTPResponseErrorWrapper>
 ) => {
-  res.json(getChatListMockData);
+  const userId = "123" as string; // Hardcoded user ID for now
+
+  db.all(
+    "SELECT * FROM chats WHERE userId = ?",
+    [userId],
+    (err: { message: any }, rows: ChatListModel[]) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: "Failed to retrieve chat list" });
+      }
+
+      // Respond with the chat list from the database
+      return res.json({
+        status: {
+          code: 200,
+          message: "OK",
+        },
+        data: {
+          chatList: rows.map((row: any) => ({
+            chatId: row.chatId,
+            chatName: row.chatName,
+          })),
+        },
+      });
+    }
+  );
 };
 
 export const getUserInfo = (
@@ -64,14 +94,94 @@ export const getUserInfo = (
 
 export const getChatInfo = async (req: Request, res: Response) => {
   const chatId = req.query.chatId as string;
-  const chatInfo = await getChatInfoMockData(chatId);
-  res.json(chatInfo);
+
+  db.get(
+    "SELECT * FROM chats WHERE chatId = ?",
+    [chatId],
+    (err: { message: any }, row: ChatInfoModel) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: "Failed to retrieve chat info" });
+      }
+
+      if (!row) {
+        return res.status(404).json({ error: "Chat not found" });
+      }
+
+      // Respond with the chat info from the database
+      return res.json({
+        status: {
+          code: 200,
+          message: "OK",
+        },
+        data: {
+          chatInfo: {
+            chatId: row.chatId,
+            chatName: row.chatName,
+            messages: JSON.parse(row.messages as unknown as string),
+          },
+        },
+      });
+    }
+  );
 };
 
 export const postQueryMessage = async (req: Request, res: Response) => {
   await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
-  const chatId = req.query.chatId as string;
-  const message = req.query.message as string;
-  const response = await postQueryMessageMockData(chatId, message);
-  res.json(response);
+  const chatId = req.body.chatId as string;
+
+  const message = req.body.message as ChatMessageModel;
+  const responseMessage = getMockResponseMessage(); // This is where the message should be generated
+
+  const messageModel: ChatMessageModel = message;
+  const responseMessageModel: ChatMessageModel = {
+    messageId: Date.now().toString(),
+    userType: UserTypeEnum.AI,
+    message: responseMessage,
+  };
+
+  // Put the message and response message into the database of chat
+  db.get(
+    "SELECT * FROM chats WHERE chatId = ?",
+    [chatId],
+    (err: { message: any }, row: ChatInfoModel) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: "Failed to retrieve chat info" });
+      }
+
+      if (!row) {
+        return res.status(404).json({ error: "Chat not found" });
+      }
+
+      const messages = JSON.parse(
+        row.messages as unknown as string
+      ) as ChatMessageModel[];
+      messages.push(messageModel);
+      messages.push(responseMessageModel);
+
+      db.run(
+        "UPDATE chats SET messages = ? WHERE chatId = ?",
+        [JSON.stringify(messages), chatId],
+        (err: { message: any }) => {
+          if (err) {
+            console.error(err.message);
+            return res
+              .status(500)
+              .json({ error: "Failed to update chat info" });
+          }
+
+          return res.json({
+            status: {
+              code: 200,
+              message: "OK",
+            },
+            data: {
+              message: responseMessageModel,
+            },
+          });
+        }
+      );
+    }
+  );
 };
