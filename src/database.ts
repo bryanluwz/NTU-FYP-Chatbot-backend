@@ -38,11 +38,13 @@ const initializeDatabase = () => {
     db.run(`CREATE TABLE IF NOT EXISTS chats (
   chatId TEXT PRIMARY KEY,
   userId TEXT NOT NULL,
+  personaId TEXT NOT NULL, -- foreign key to personas table
   chatName TEXT NOT NULL,
   messages TEXT NOT NULL, -- JSON string to store messages
-  createdAt TEXT NOT NULL,
-  updatedAt TEXT NOT NULL,
+  createdAt INTEGER NOT NULL,
+  updatedAt INTEGER NOT NULL,
   FOREIGN KEY (userId) REFERENCES users(id)
+  FOREIGN KEY (personaId) REFERENCES personas(personaId)
 )`);
 
     // Create Personas table
@@ -51,8 +53,8 @@ const initializeDatabase = () => {
   personaName TEXT NOT NULL,
   personaDescription TEXT NOT NULL,
   personaAvatar TEXT,
-  createdAt TEXT NOT NULL,
-  updatedAt TEXT NOT NULL
+  createdAt INTEGER NOT NULL,
+  updatedAt INTEGER NOT NULL
 )`);
 
     // Check if there are any users already in the table
@@ -99,31 +101,34 @@ const insertMockData = () => {
     {
       chatId: "3",
       userId: "123",
+      personaId: "10",
       chatName: "Chat 1",
       messages: [
         { messageId: "1", userType: UserTypeEnum.AI, message: "Hello!" },
       ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     },
     {
       chatId: "4",
       userId: "123",
+      personaId: "11",
       chatName: "Chat 2",
       messages: [
         { messageId: "3", userType: UserTypeEnum.AI, message: "nun!" },
       ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     },
   ];
 
   chats.forEach((chat) => {
     db.run(
-      "INSERT INTO chats (chatId, userId, chatName, messages, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO chats (chatId, userId, personaId, chatName, messages, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
         chat.chatId,
         chat.userId,
+        chat.personaId,
         chat.chatName,
         JSON.stringify(chat.messages),
         chat.createdAt,

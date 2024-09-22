@@ -4,14 +4,18 @@ import {
   ChatInfoModel,
   ChatListModel,
   ChatMessageModel,
+  GetChatInfoResponseModel,
   GetChatListResponseModel,
+  GetMinimumChatInfoResponseModel,
   GetUserInfoResponseModel,
   UserInfoModel,
 } from "../typings/chatTypings";
 
 import db from "../database";
-import { HTTPResponseErrorWrapper } from "../typings";
+import { HTTPResponseEmptyWrapper, HTTPResponseErrorWrapper } from "../typings";
 import { UserTypeEnum } from "../typings/enums";
+import { v4 as uuidv4 } from "uuid";
+import { PersonaModel } from "../typings/dashboardTypings";
 
 const DefaultUserAvatar = "src/assets/user-avatar-default.png";
 
@@ -108,30 +112,80 @@ export const updateChatInfo = async (req: Request, res: Response) => {
   }
 };
 
-const createChat = async (req: Request, res: Response) => {
-  // DO NOT RUN THIS FIRST
-  const chatId = req.body.chatId as string;
+const createChat = async (
+  req: Request,
+  res: Response<GetMinimumChatInfoResponseModel | HTTPResponseErrorWrapper>
+) => {
+  const personaId = req.body.personaId as string;
+  const userId = req.body.userId as string;
 
-  // Get chat name from the database
+  // Check if the persona exists as a chat by user
   db.get(
-    "SELECT * FROM chatNames WHERE chatId = ?",
-    [chatId],
-    (err: { message: any }, row: any) => {
+    "SELECT * FROM chats WHERE userId = ? AND personaId = ?",
+    [userId, personaId],
+    (err: { message: any }, row: ChatInfoModel) => {
       if (err) {
         console.error(err.message);
-        return res.status(500).json({ error: "Failed to retrieve chat name" });
+        return res
+          .status(500)
+          .json({ error: "Failed to check chat existence" });
+      }
+
+      if (row) {
+        return res.json({
+          status: {
+            code: 200,
+            message: "OK",
+          },
+          data: {
+            chatInfo: {
+              chatId: row.chatId,
+              chatName: row.chatName,
+            },
+          },
+        });
+      }
+    }
+  );
+
+  // Get chat name from the database table personas
+  db.get(
+    "SELECT * FROM personas WHERE personaId = ?",
+    [personaId],
+    (err: { message: any }, row: PersonaModel) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: "Failed to retrieve persona" });
       }
 
       if (!row) {
-        return res.status(404).json({ error: "Chat name not found" });
+        return res.status(404).json({ error: "Persona not found" });
       }
 
-      const chatName = row.chatName;
+      const chatName = row.personaName;
 
       // Create a new chat in the database
+      const chatId = uuidv4();
+
+      const messages: ChatMessageModel[] = [
+        {
+          userType: UserTypeEnum.AI,
+          messageId: uuidv4(),
+          message: `Hello! I am a Chatbot for ${row.personaName}! \n${row.personaDescription}\n How can I help you today?`,
+        },
+      ];
+
       db.run(
-        "INSERT INTO chats (chatId, chatName, messages) VALUES (?, ?, ?)",
-        [chatId, chatName, JSON.stringify([])],
+        "INSERT INTO chats (chatId, userId, personaId, chatName, messages, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [
+          chatId,
+          userId,
+          personaId,
+          chatName,
+          JSON.stringify(messages),
+          Date.now(),
+          Date.now(),
+        ],
         (err: { message: any }) => {
           if (err) {
             console.error(err.message);
@@ -147,7 +201,6 @@ const createChat = async (req: Request, res: Response) => {
               chatInfo: {
                 chatId,
                 chatName,
-                messages: [],
               },
             },
           });
@@ -157,7 +210,10 @@ const createChat = async (req: Request, res: Response) => {
   );
 };
 
-const updateChat = async (req: Request, res: Response) => {
+const updateChat = async (
+  req: Request,
+  res: Response<GetMinimumChatInfoResponseModel | HTTPResponseErrorWrapper>
+) => {
   const updateInfoModel = req.body.update as ChatInfoModel;
 
   db.run(
@@ -175,14 +231,20 @@ const updateChat = async (req: Request, res: Response) => {
           message: "OK",
         },
         data: {
-          chatInfo: updateInfoModel,
+          chatInfo: {
+            chatId: updateInfoModel.chatId,
+            chatName: updateInfoModel.chatName,
+          },
         },
       });
     }
   );
 };
 
-const deleteChat = async (req: Request, res: Response) => {
+const deleteChat = async (
+  req: Request,
+  res: Response<HTTPResponseEmptyWrapper | HTTPResponseErrorWrapper>
+) => {
   const chatId = req.body.chatId as string;
 
   db.run(
@@ -199,15 +261,16 @@ const deleteChat = async (req: Request, res: Response) => {
           code: 200,
           message: "OK",
         },
-        data: {
-          chatId,
-        },
+        data: {},
       });
     }
   );
 };
 
-const getChatInfo = async (req: Request, res: Response) => {
+const getChatInfo = async (
+  req: Request,
+  res: Response<GetChatInfoResponseModel | HTTPResponseErrorWrapper>
+) => {
   const chatId = req.body.chatId as string;
 
   db.get(
@@ -234,6 +297,10 @@ const getChatInfo = async (req: Request, res: Response) => {
             chatId: row.chatId,
             chatName: row.chatName,
             messages: JSON.parse(row.messages as unknown as string),
+            userId: row.userId,
+            personaId: row.personaId,
+            createdAt: row.createdAt,
+            updatedAt: row.updatedAt,
           },
         },
       });

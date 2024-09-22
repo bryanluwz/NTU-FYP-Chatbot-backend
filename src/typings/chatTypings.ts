@@ -14,13 +14,17 @@ export interface ChatListModel {
   updatedAt: string; // in timestamp format
 }
 
-export interface ChatInfoModel {
-  userId: string;
+export interface MinimumChatInfoModel {
   chatId: string;
-  chatName: string;
+  chatName?: string;
+}
+
+export interface ChatInfoModel extends MinimumChatInfoModel {
+  userId: string;
+  personaId: string; // frontend does not have this attribute
   messages: ChatMessageModel[];
-  createdAt: string; // in timestamp format
-  updatedAt: string;
+  createdAt: number; // in timestamp format
+  updatedAt: number;
 }
 
 export interface UserInfoModel {
@@ -49,6 +53,16 @@ export interface GetChatInfoResponseModel {
   status: HTTPStatusBody;
   data: {
     chatInfo: ChatInfoModel;
+  };
+}
+
+export interface GetMinimumChatInfoResponseModel {
+  status: HTTPStatusBody;
+  data: {
+    chatInfo: {
+      chatId: string;
+      chatName?: string;
+    };
   };
 }
 

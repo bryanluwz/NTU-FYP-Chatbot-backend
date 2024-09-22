@@ -25,3 +25,8 @@ export interface HTTPStatusBody {
 export interface HTTPResponseErrorWrapper {
   error?: string;
 }
+
+export interface HTTPResponseEmptyWrapper {
+  status: HTTPStatusBody;
+  data: {};
+}
