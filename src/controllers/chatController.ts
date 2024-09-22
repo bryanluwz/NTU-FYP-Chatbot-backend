@@ -120,61 +120,173 @@ const createChat = async (
   const userId = req.body.userId as string;
 
   // Check if the persona exists as a chat by user
-  db.get(
-    "SELECT * FROM chats WHERE userId = ? AND personaId = ?",
-    [userId, personaId],
-    (err: { message: any }, row: ChatInfoModel) => {
-      if (err) {
-        console.error(err.message);
-        return res
-          .status(500)
-          .json({ error: "Failed to check chat existence" });
+  // db.get(
+  //   "SELECT * FROM chats WHERE userId = ? AND personaId = ?",
+  //   [userId, personaId],
+  //   (err: { message: any }, row: ChatInfoModel) => {
+  //     if (err) {
+  //       console.error(err.message);
+  //       return res
+  //         .status(500)
+  //         .json({ error: "Failed to check chat existence" });
+  //     }
+
+  //     if (row) {
+  //       return res.json({
+  //         status: {
+  //           code: 200,
+  //           message: "OK",
+  //         },
+  //         data: {
+  //           chatInfo: {
+  //             chatId: row.chatId,
+  //             chatName: row.chatName,
+  //           },
+  //         },
+  //       });
+  //     }
+  //   }
+  // );
+
+  // // Get chat name from the database table personas
+  // db.get(
+  //   "SELECT * FROM personas WHERE personaId = ?",
+  //   [personaId],
+  //   (err: { message: any }, row: PersonaModel) => {
+  //     if (err) {
+  //       console.error(err.message);
+  //       return res.status(500).json({ error: "Failed to retrieve persona" });
+  //     }
+
+  //     if (!row) {
+  //       return res.status(404).json({ error: "Persona not found" });
+  //     }
+
+  //     const chatName = row.personaName;
+
+  //     // Create a new chat in the database
+  //     const chatId = uuidv4();
+
+  //     const messages: ChatMessageModel[] = [
+  //       {
+  //         userType: UserTypeEnum.AI,
+  //         messageId: uuidv4(),
+  //         message: `Hello! I am a Chatbot for ${row.personaName}! \n${row.personaDescription}\n How can I help you today?`,
+  //       },
+  //     ];
+
+  //     db.run(
+  //       "INSERT INTO chats (chatId, userId, personaId, chatName, messages, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)",
+  //       [
+  //         chatId,
+  //         userId,
+  //         personaId,
+  //         chatName,
+  //         JSON.stringify(messages),
+  //         Date.now(),
+  //         Date.now(),
+  //       ],
+  //       (err: { message: any }) => {
+  //         if (err) {
+  //           console.error(err.message);
+  //           return res.status(500).json({ error: "Failed to create chat" });
+  //         }
+
+  //         return res.json({
+  //           status: {
+  //             code: 200,
+  //             message: "OK",
+  //           },
+  //           data: {
+  //             chatInfo: {
+  //               chatId,
+  //               chatName,
+  //             },
+  //           },
+  //         });
+  //       }
+  //     );
+  //   }
+  // );
+
+  try {
+    // Check if the persona exists as a chat by user
+    const existingChat = await new Promise<ChatInfoModel | undefined>(
+      (resolve, reject) => {
+        db.get(
+          "SELECT * FROM chats WHERE userId = ? AND personaId = ?",
+          [userId, personaId],
+          (
+            err: any,
+            row:
+              | ChatInfoModel
+              | PromiseLike<ChatInfoModel | undefined>
+              | undefined
+          ) => {
+            if (err) {
+              return reject(err);
+            }
+            resolve(row);
+          }
+        );
       }
+    );
 
-      if (row) {
-        return res.json({
-          status: {
-            code: 200,
-            message: "OK",
-          },
-          data: {
-            chatInfo: {
-              chatId: row.chatId,
-              chatName: row.chatName,
-            },
-          },
-        });
-      }
-    }
-  );
-
-  // Get chat name from the database table personas
-  db.get(
-    "SELECT * FROM personas WHERE personaId = ?",
-    [personaId],
-    (err: { message: any }, row: PersonaModel) => {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ error: "Failed to retrieve persona" });
-      }
-
-      if (!row) {
-        return res.status(404).json({ error: "Persona not found" });
-      }
-
-      const chatName = row.personaName;
-
-      // Create a new chat in the database
-      const chatId = uuidv4();
-
-      const messages: ChatMessageModel[] = [
-        {
-          userType: UserTypeEnum.AI,
-          messageId: uuidv4(),
-          message: `Hello! I am a Chatbot for ${row.personaName}! \n${row.personaDescription}\n How can I help you today?`,
+    if (existingChat) {
+      return res.json({
+        status: {
+          code: 200,
+          message: "OK",
         },
-      ];
+        data: {
+          chatInfo: {
+            chatId: existingChat.chatId,
+            chatName: existingChat.chatName,
+          },
+        },
+      });
+    }
 
+    // Get chat name from the database table personas
+    const persona = await new Promise<PersonaModel | undefined>(
+      (resolve, reject) => {
+        db.get(
+          "SELECT * FROM personas WHERE personaId = ?",
+          [personaId],
+          (
+            err: any,
+            row:
+              | PersonaModel
+              | PromiseLike<PersonaModel | undefined>
+              | undefined
+          ) => {
+            if (err) {
+              return reject(err);
+            }
+            resolve(row);
+          }
+        );
+      }
+    );
+
+    if (!persona) {
+      return res.status(404).json({ error: "Persona not found" });
+    }
+
+    const chatName = persona.personaName;
+
+    // Create a new chat in the database
+    const chatId = uuidv4();
+
+    const messages: ChatMessageModel[] = [
+      {
+        userType: UserTypeEnum.AI,
+        messageId: uuidv4(),
+        message: `Hello! I am a Chatbot for ${persona.personaName}! \n${persona.personaDescription} \nHow can I help you today?`,
+      },
+    ];
+
+    await new Promise<void>((resolve, reject) => {
       db.run(
         "INSERT INTO chats (chatId, userId, personaId, chatName, messages, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)",
         [
@@ -186,28 +298,31 @@ const createChat = async (
           Date.now(),
           Date.now(),
         ],
-        (err: { message: any }) => {
+        (err: any) => {
           if (err) {
-            console.error(err.message);
-            return res.status(500).json({ error: "Failed to create chat" });
+            return reject(err);
           }
-
-          return res.json({
-            status: {
-              code: 200,
-              message: "OK",
-            },
-            data: {
-              chatInfo: {
-                chatId,
-                chatName,
-              },
-            },
-          });
+          resolve();
         }
       );
-    }
-  );
+    });
+
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        chatInfo: {
+          chatId,
+          chatName,
+        },
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "An error occurred" });
+  }
 };
 
 const updateChat = async (
@@ -310,7 +425,7 @@ const getChatInfo = async (
 
 // Respond to user message
 export const postQueryMessage = async (req: Request, res: Response) => {
-  await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
+  await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate delay
   const chatId = req.body.chatId as string;
 
   const message = req.body.message as ChatMessageModel;
@@ -344,8 +459,8 @@ export const postQueryMessage = async (req: Request, res: Response) => {
       messages.push(responseMessageModel);
 
       db.run(
-        "UPDATE chats SET messages = ? WHERE chatId = ?",
-        [JSON.stringify(messages), chatId],
+        "UPDATE chats SET messages = ?, updatedAt = ? WHERE chatId = ?",
+        [JSON.stringify(messages), Date.now(), chatId],
         (err: { message: any }) => {
           if (err) {
             console.error(err.message);
