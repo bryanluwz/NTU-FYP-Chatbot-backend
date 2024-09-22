@@ -1,11 +1,33 @@
 import { Request, Response } from "express";
-import { getAvailableChatsMockData } from "./mockdata";
-import { GetAvailableChatsResponseModel } from "../typings/dashboardTypings";
+import {
+  GetPersonaResponseModel,
+  PersonaModel,
+} from "../typings/dashboardTypings";
 
-// Example of getting users
+import db from "../database";
+import { HTTPResponseErrorWrapper } from "../typings";
+
 export const getAvailableChats = (
   req: Request,
-  res: Response<GetAvailableChatsResponseModel>
+  res: Response<GetPersonaResponseModel | HTTPResponseErrorWrapper>
 ) => {
-  res.json(getAvailableChatsMockData);
+  db.all(
+    "SELECT * FROM personas",
+    (err: { message: any }, rows: PersonaModel[]) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: "Failed to retrieve chats" });
+      }
+
+      return res.json({
+        status: {
+          code: 200,
+          message: "OK",
+        },
+        data: {
+          personas: rows,
+        },
+      });
+    }
+  );
 };

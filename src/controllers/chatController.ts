@@ -1,11 +1,5 @@
 import { Request, Response } from "express";
-import {
-  getChatInfoMockData,
-  getChatListMockData,
-  getMockResponseMessage,
-  getUserInfoMockData,
-  postQueryMessageMockData,
-} from "./mockdata";
+import { getMockResponseMessage } from "./mockdata";
 import {
   ChatInfoModel,
   ChatListModel,
@@ -47,6 +41,7 @@ export const getChatList = (
           chatList: rows.map((row: any) => ({
             chatId: row.chatId,
             chatName: row.chatName,
+            updatedAt: row.updatedAt,
           })),
         },
       });
@@ -92,8 +87,128 @@ export const getUserInfo = (
   );
 };
 
-export const getChatInfo = async (req: Request, res: Response) => {
-  const chatId = req.query.chatId as string;
+// Chat: Create, update, delete, get info
+export const updateChatInfo = async (req: Request, res: Response) => {
+  // If req.body.action is "create", create a new chat
+  // If req.body.action is "update", update the chat
+  // If req.body.action is "delete", delete the chat
+  // If req.body.action is "get", get the chat info
+  const action = req.body.action as string;
+  switch (action) {
+    case "create":
+      return createChat(req, res);
+    case "update":
+      return updateChat(req, res);
+    case "delete":
+      return deleteChat(req, res);
+    case "get":
+      return getChatInfo(req, res);
+    default:
+      return res.status(400).json({ error: "Invalid action" });
+  }
+};
+
+const createChat = async (req: Request, res: Response) => {
+  // DO NOT RUN THIS FIRST
+  const chatId = req.body.chatId as string;
+
+  // Get chat name from the database
+  db.get(
+    "SELECT * FROM chatNames WHERE chatId = ?",
+    [chatId],
+    (err: { message: any }, row: any) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: "Failed to retrieve chat name" });
+      }
+
+      if (!row) {
+        return res.status(404).json({ error: "Chat name not found" });
+      }
+
+      const chatName = row.chatName;
+
+      // Create a new chat in the database
+      db.run(
+        "INSERT INTO chats (chatId, chatName, messages) VALUES (?, ?, ?)",
+        [chatId, chatName, JSON.stringify([])],
+        (err: { message: any }) => {
+          if (err) {
+            console.error(err.message);
+            return res.status(500).json({ error: "Failed to create chat" });
+          }
+
+          return res.json({
+            status: {
+              code: 200,
+              message: "OK",
+            },
+            data: {
+              chatInfo: {
+                chatId,
+                chatName,
+                messages: [],
+              },
+            },
+          });
+        }
+      );
+    }
+  );
+};
+
+const updateChat = async (req: Request, res: Response) => {
+  const updateInfoModel = req.body.update as ChatInfoModel;
+
+  db.run(
+    "UPDATE chats SET chatName = ? WHERE chatId = ?",
+    [updateInfoModel.chatName, updateInfoModel.chatId],
+    (err: { message: any }) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: "Failed to update chat" });
+      }
+
+      return res.json({
+        status: {
+          code: 200,
+          message: "OK",
+        },
+        data: {
+          chatInfo: updateInfoModel,
+        },
+      });
+    }
+  );
+};
+
+const deleteChat = async (req: Request, res: Response) => {
+  const chatId = req.body.chatId as string;
+
+  db.run(
+    "DELETE FROM chats WHERE chatId = ?",
+    [chatId],
+    (err: { message: any }) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: "Failed to delete chat" });
+      }
+
+      return res.json({
+        status: {
+          code: 200,
+          message: "OK",
+        },
+        data: {
+          chatId,
+        },
+      });
+    }
+  );
+};
+
+const getChatInfo = async (req: Request, res: Response) => {
+  const chatId = req.body.chatId as string;
 
   db.get(
     "SELECT * FROM chats WHERE chatId = ?",
@@ -126,6 +241,7 @@ export const getChatInfo = async (req: Request, res: Response) => {
   );
 };
 
+// Respond to user message
 export const postQueryMessage = async (req: Request, res: Response) => {
   await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate delay
   const chatId = req.body.chatId as string;

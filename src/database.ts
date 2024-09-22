@@ -1,15 +1,17 @@
+import { personasMockData } from "./controllers/mockdata";
 import {
   ChatInfoModel,
   ChatMessageModel,
   UserInfoModel,
 } from "./typings/chatTypings";
+import { PersonaModel } from "./typings/dashboardTypings";
 import { UserTypeEnum } from "./typings/enums";
 
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 
 // Create or open a local SQLite database file
-const dbPath = path.resolve(__dirname, "test.db"); // change db name here
+const dbPath = path.resolve(__dirname, "../database/test.db"); // change db name here
 const db = new sqlite3.Database(dbPath, (err: { message: any }) => {
   if (err) {
     console.error("Error opening database", err.message);
@@ -38,7 +40,19 @@ const initializeDatabase = () => {
   userId TEXT NOT NULL,
   chatName TEXT NOT NULL,
   messages TEXT NOT NULL, -- JSON string to store messages
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL,
   FOREIGN KEY (userId) REFERENCES users(id)
+)`);
+
+    // Create Personas table
+    db.run(`CREATE TABLE IF NOT EXISTS personas (
+  personaId TEXT PRIMARY KEY,
+  personaName TEXT NOT NULL,
+  personaDescription TEXT NOT NULL,
+  personaAvatar TEXT,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL
 )`);
 
     // Check if there are any users already in the table
@@ -80,6 +94,7 @@ const insertMockData = () => {
     );
   });
 
+  // Insert mock chats
   const chats: ChatInfoModel[] = [
     {
       chatId: "3",
@@ -87,8 +102,9 @@ const insertMockData = () => {
       chatName: "Chat 1",
       messages: [
         { messageId: "1", userType: UserTypeEnum.AI, message: "Hello!" },
-        { messageId: "2", userType: UserTypeEnum.User, message: "Hi!" },
       ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
     {
       chatId: "4",
@@ -96,18 +112,48 @@ const insertMockData = () => {
       chatName: "Chat 2",
       messages: [
         { messageId: "3", userType: UserTypeEnum.AI, message: "nun!" },
-        { messageId: "4", userType: UserTypeEnum.User, message: "notsu!" },
       ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
   ];
 
   chats.forEach((chat) => {
     db.run(
-      "INSERT INTO chats (chatId, userId, chatName, messages) VALUES (?, ?, ?, ?)",
-      [chat.chatId, chat.userId, chat.chatName, JSON.stringify(chat.messages)],
+      "INSERT INTO chats (chatId, userId, chatName, messages, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)",
+      [
+        chat.chatId,
+        chat.userId,
+        chat.chatName,
+        JSON.stringify(chat.messages),
+        chat.createdAt,
+        chat.updatedAt,
+      ],
       (err: { message: any }) => {
         if (err) {
           console.error("Error inserting mock chat", err.message);
+        }
+      }
+    );
+  });
+
+  // Insert mock personas
+  const personas: PersonaModel[] = personasMockData;
+
+  personas.forEach((persona) => {
+    db.run(
+      "INSERT INTO personas (personaId, personaName, personaDescription, personaAvatar, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)",
+      [
+        persona.personaId,
+        persona.personaName,
+        persona.personaDescription,
+        persona.personaAvatar,
+        persona.createdAt,
+        persona.updatedAt,
+      ],
+      (err: { message: any }) => {
+        if (err) {
+          console.error("Error inserting mock persona", err.message);
         }
       }
     );
