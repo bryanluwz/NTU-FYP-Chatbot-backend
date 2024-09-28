@@ -13,7 +13,7 @@ import {
 
 import db from "../database";
 import { HTTPResponseEmptyWrapper, HTTPResponseErrorWrapper } from "../typings";
-import { UserTypeEnum } from "../typings/enums";
+import { ChatUserTypeEnum } from "../typings/enums";
 import { v4 as uuidv4 } from "uuid";
 import { PersonaModel } from "../typings/dashboardTypings";
 
@@ -83,6 +83,7 @@ export const getUserInfo = (
             id: row.id,
             username: row.username,
             email: row.email,
+            role: row.role,
             avatar: DefaultUserAvatar, // Default avatar for now
           },
         },
@@ -169,7 +170,7 @@ const createChat = async (
 
   //     const messages: ChatMessageModel[] = [
   //       {
-  //         userType: UserTypeEnum.AI,
+  //         userType: ChatUserTypeEnum.AI,
   //         messageId: uuidv4(),
   //         message: `Hello! I am a Chatbot for ${row.personaName}! \n${row.personaDescription}\n How can I help you today?`,
   //       },
@@ -280,7 +281,7 @@ const createChat = async (
 
     const messages: ChatMessageModel[] = [
       {
-        userType: UserTypeEnum.AI,
+        userType: ChatUserTypeEnum.AI,
         messageId: uuidv4(),
         message: `Hello! I am a Chatbot for ${persona.personaName}! \n${persona.personaDescription} \nHow can I help you today?`,
       },
@@ -434,7 +435,7 @@ export const postQueryMessage = async (req: Request, res: Response) => {
   const messageModel: ChatMessageModel = message;
   const responseMessageModel: ChatMessageModel = {
     messageId: Date.now().toString(),
-    userType: UserTypeEnum.AI,
+    userType: ChatUserTypeEnum.AI,
     message: responseMessage,
   };
 

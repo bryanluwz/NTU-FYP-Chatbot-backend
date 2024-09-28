@@ -8,7 +8,7 @@ import {
   GetPersonaResponseModel,
   PersonaModel,
 } from "../typings/dashboardTypings";
-import { UserTypeEnum } from "../typings/enums";
+import { ChatUserTypeEnum } from "../typings/enums";
 
 export const getMockResponseMessage = () => {
   const fakeResponseList = [
