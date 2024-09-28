@@ -1,14 +1,4 @@
-import {
-  ChatListModel,
-  GetChatInfoResponseModel,
-  GetChatListResponseModel,
-  PostQueryMessageResponseModel,
-} from "../typings/chatTypings";
-import {
-  GetPersonaResponseModel,
-  PersonaModel,
-} from "../typings/dashboardTypings";
-import { ChatUserTypeEnum } from "../typings/enums";
+import { PersonaModel } from "../typings/dashboardTypings";
 
 export const getMockResponseMessage = () => {
   const fakeResponseList = [
@@ -102,6 +92,47 @@ export const personasMockData: PersonaModel[] = [
       "This is a course chatbot for SC0000, created by the mysterious hacker 4chan",
     personaAvatar: "https://via.placeholder.com/150",
     createdAt: 1026117610000,
+    updatedAt: 1726117610000,
+  },
+  {
+    personaId: "9",
+    personaName: "AK47 - Chatbot Warfare",
+    personaDescription: "NTU is warzone, chatbot is comrade, AK47 is weapon",
+    personaAvatar: "https://via.placeholder.com/150",
+    createdAt: 926117610000,
+    updatedAt: 1726117610000,
+  },
+  {
+    personaId: "10",
+    personaName: "SG59 - Chatbot Singlish",
+    personaDescription: "Wah lao eh, chatbot also can speak Singlish",
+    personaAvatar: "https://via.placeholder.com/150",
+    createdAt: 826117610000,
+    updatedAt: 1726117610000,
+  },
+  {
+    personaId: "11",
+    personaName: "SC9999 - Chatbot Quantum Computing",
+    personaDescription:
+      "This is a course chatbot for SC9999, created by the quantum physicist Richard Feynman",
+    personaAvatar: "https://via.placeholder.com/150",
+    createdAt: 726117610000,
+    updatedAt: 1726117610000,
+  },
+  {
+    personaId: "12",
+    personaName: "CCP101 - Ching Chong Chatbot",
+    personaDescription: "早上好中国，现在我有冰淇淋。",
+    personaAvatar: "https://via.placeholder.com/150",
+    createdAt: 626117610000,
+    updatedAt: 1726117610000,
+  },
+  {
+    personaId: "13",
+    personaName: "JAP101 - アニメチャットボット",
+    personaDescription: "人間は欲深い生き物",
+    personaAvatar: "https://via.placeholder.com/150",
+    createdAt: 526117610000,
     updatedAt: 1726117610000,
   },
 ];

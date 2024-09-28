@@ -9,8 +9,3 @@ export enum UserRoleEnum {
   Educator = "educator",
   User = "user",
 }
-
-export enum TabEnum {
-  Chat = "chat",
-  Dashboard = "dashboard",
-}

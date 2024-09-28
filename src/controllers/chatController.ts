@@ -11,93 +11,80 @@ import {
   UserInfoModel,
 } from "../typings/chatTypings";
 
-import db from "../database";
 import { HTTPResponseEmptyWrapper, HTTPResponseErrorWrapper } from "../typings";
 import { ChatUserTypeEnum } from "../typings/enums";
 import { v4 as uuidv4 } from "uuid";
+import { Chat } from "../models/Chat";
+import { User } from "../models/User";
+import { Persona } from "../models/Persona";
 import { PersonaModel } from "../typings/dashboardTypings";
 
 const DefaultUserAvatar = "src/assets/user-avatar-default.png";
 
 // Example of getting users
-export const getChatList = (
+export const getChatList = async (
   req: Request,
   res: Response<GetChatListResponseModel | HTTPResponseErrorWrapper>
 ) => {
-  const userId = "123" as string; // Hardcoded user ID for now
+  const userId = "123"; // Hardcoded user ID for now
 
-  db.all(
-    "SELECT * FROM chats WHERE userId = ?",
-    [userId],
-    (err: { message: any }, rows: ChatListModel[]) => {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ error: "Failed to retrieve chat list" });
-      }
+  try {
+    const chats = (await Chat.findAll({
+      where: { userId },
+      attributes: ["chatId", "chatName", "updatedAt"],
+    })) as ChatListModel[];
 
-      // Respond with the chat list from the database
-      return res.json({
-        status: {
-          code: 200,
-          message: "OK",
-        },
-        data: {
-          chatList: rows.map((row: any) => ({
-            chatId: row.chatId,
-            chatName: row.chatName,
-            updatedAt: row.updatedAt,
-          })),
-        },
-      });
-    }
-  );
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        chatList: chats,
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to retrieve chat list" });
+  }
 };
 
-export const getUserInfo = (
+export const getUserInfo = async (
   req: Request,
   res: Response<GetUserInfoResponseModel | HTTPResponseErrorWrapper>
 ) => {
-  const userId = "123" as string; // Hardcoded user ID for now
+  const userId = "123"; // Hardcoded user ID for now
 
-  db.get(
-    "SELECT * FROM users WHERE id = ?",
-    [userId],
-    (err: { message: any }, row: UserInfoModel) => {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ error: "Failed to retrieve user info" });
-      }
+  try {
+    const user = (await User.findByPk(userId)) as UserInfoModel;
 
-      if (!row) {
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      // Respond with the user info from the database
-      return res.json({
-        status: {
-          code: 200,
-          message: "OK",
-        },
-        data: {
-          userInfo: {
-            id: row.id,
-            username: row.username,
-            email: row.email,
-            role: row.role,
-            avatar: DefaultUserAvatar, // Default avatar for now
-          },
-        },
-      });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
-  );
+
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        userInfo: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          avatar: DefaultUserAvatar, // Default avatar for now
+        },
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to retrieve user info" });
+  }
 };
 
 // Chat: Create, update, delete, get info
 export const updateChatInfo = async (req: Request, res: Response) => {
-  // If req.body.action is "create", create a new chat
-  // If req.body.action is "update", update the chat
-  // If req.body.action is "delete", delete the chat
-  // If req.body.action is "get", get the chat info
   const action = req.body.action as string;
   switch (action) {
     case "create":
@@ -120,118 +107,10 @@ const createChat = async (
   const personaId = req.body.personaId as string;
   const userId = req.body.userId as string;
 
-  // Check if the persona exists as a chat by user
-  // db.get(
-  //   "SELECT * FROM chats WHERE userId = ? AND personaId = ?",
-  //   [userId, personaId],
-  //   (err: { message: any }, row: ChatInfoModel) => {
-  //     if (err) {
-  //       console.error(err.message);
-  //       return res
-  //         .status(500)
-  //         .json({ error: "Failed to check chat existence" });
-  //     }
-
-  //     if (row) {
-  //       return res.json({
-  //         status: {
-  //           code: 200,
-  //           message: "OK",
-  //         },
-  //         data: {
-  //           chatInfo: {
-  //             chatId: row.chatId,
-  //             chatName: row.chatName,
-  //           },
-  //         },
-  //       });
-  //     }
-  //   }
-  // );
-
-  // // Get chat name from the database table personas
-  // db.get(
-  //   "SELECT * FROM personas WHERE personaId = ?",
-  //   [personaId],
-  //   (err: { message: any }, row: PersonaModel) => {
-  //     if (err) {
-  //       console.error(err.message);
-  //       return res.status(500).json({ error: "Failed to retrieve persona" });
-  //     }
-
-  //     if (!row) {
-  //       return res.status(404).json({ error: "Persona not found" });
-  //     }
-
-  //     const chatName = row.personaName;
-
-  //     // Create a new chat in the database
-  //     const chatId = uuidv4();
-
-  //     const messages: ChatMessageModel[] = [
-  //       {
-  //         userType: ChatUserTypeEnum.AI,
-  //         messageId: uuidv4(),
-  //         message: `Hello! I am a Chatbot for ${row.personaName}! \n${row.personaDescription}\n How can I help you today?`,
-  //       },
-  //     ];
-
-  //     db.run(
-  //       "INSERT INTO chats (chatId, userId, personaId, chatName, messages, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)",
-  //       [
-  //         chatId,
-  //         userId,
-  //         personaId,
-  //         chatName,
-  //         JSON.stringify(messages),
-  //         Date.now(),
-  //         Date.now(),
-  //       ],
-  //       (err: { message: any }) => {
-  //         if (err) {
-  //           console.error(err.message);
-  //           return res.status(500).json({ error: "Failed to create chat" });
-  //         }
-
-  //         return res.json({
-  //           status: {
-  //             code: 200,
-  //             message: "OK",
-  //           },
-  //           data: {
-  //             chatInfo: {
-  //               chatId,
-  //               chatName,
-  //             },
-  //           },
-  //         });
-  //       }
-  //     );
-  //   }
-  // );
-
   try {
-    // Check if the persona exists as a chat by user
-    const existingChat = await new Promise<ChatInfoModel | undefined>(
-      (resolve, reject) => {
-        db.get(
-          "SELECT * FROM chats WHERE userId = ? AND personaId = ?",
-          [userId, personaId],
-          (
-            err: any,
-            row:
-              | ChatInfoModel
-              | PromiseLike<ChatInfoModel | undefined>
-              | undefined
-          ) => {
-            if (err) {
-              return reject(err);
-            }
-            resolve(row);
-          }
-        );
-      }
-    );
+    const existingChat = await Chat.findOne({
+      where: { userId, personaId },
+    });
 
     if (existingChat) {
       return res.json({
@@ -248,35 +127,13 @@ const createChat = async (
       });
     }
 
-    // Get chat name from the database table personas
-    const persona = await new Promise<PersonaModel | undefined>(
-      (resolve, reject) => {
-        db.get(
-          "SELECT * FROM personas WHERE personaId = ?",
-          [personaId],
-          (
-            err: any,
-            row:
-              | PersonaModel
-              | PromiseLike<PersonaModel | undefined>
-              | undefined
-          ) => {
-            if (err) {
-              return reject(err);
-            }
-            resolve(row);
-          }
-        );
-      }
-    );
+    const persona = (await Persona.findByPk(personaId)) as PersonaModel;
 
     if (!persona) {
       return res.status(404).json({ error: "Persona not found" });
     }
 
     const chatName = persona.personaName;
-
-    // Create a new chat in the database
     const chatId = uuidv4();
 
     const messages: ChatMessageModel[] = [
@@ -287,25 +144,14 @@ const createChat = async (
       },
     ];
 
-    await new Promise<void>((resolve, reject) => {
-      db.run(
-        "INSERT INTO chats (chatId, userId, personaId, chatName, messages, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [
-          chatId,
-          userId,
-          personaId,
-          chatName,
-          JSON.stringify(messages),
-          Date.now(),
-          Date.now(),
-        ],
-        (err: any) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve();
-        }
-      );
+    await Chat.create({
+      chatId,
+      userId,
+      personaId,
+      chatName,
+      messages: JSON.stringify(messages),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     });
 
     return res.json({
@@ -330,17 +176,17 @@ const updateChat = async (
   req: Request,
   res: Response<GetMinimumChatInfoResponseModel | HTTPResponseErrorWrapper>
 ) => {
-  const updateInfoModel = req.body.update as ChatInfoModel;
+  const { chatName, chatId } = req.body.update as ChatInfoModel;
 
-  db.run(
-    "UPDATE chats SET chatName = ? WHERE chatId = ?",
-    [updateInfoModel.chatName, updateInfoModel.chatId],
-    (err: { message: any }) => {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ error: "Failed to update chat" });
+  try {
+    const [updated] = await Chat.update(
+      { chatName },
+      {
+        where: { chatId },
       }
+    );
 
+    if (updated) {
       return res.json({
         status: {
           code: 200,
@@ -348,13 +194,18 @@ const updateChat = async (
         },
         data: {
           chatInfo: {
-            chatId: updateInfoModel.chatId,
-            chatName: updateInfoModel.chatName,
+            chatId,
+            chatName,
           },
         },
       });
     }
-  );
+
+    return res.status(404).json({ error: "Chat not found" });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to update chat" });
+  }
 };
 
 const deleteChat = async (
@@ -363,15 +214,12 @@ const deleteChat = async (
 ) => {
   const chatId = req.body.chatId as string;
 
-  db.run(
-    "DELETE FROM chats WHERE chatId = ?",
-    [chatId],
-    (err: { message: any }) => {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ error: "Failed to delete chat" });
-      }
+  try {
+    const deleted = await Chat.destroy({
+      where: { chatId },
+    });
 
+    if (deleted) {
       return res.json({
         status: {
           code: 200,
@@ -380,7 +228,12 @@ const deleteChat = async (
         data: {},
       });
     }
-  );
+
+    return res.status(404).json({ error: "Chat not found" });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to delete chat" });
+  }
 };
 
 const getChatInfo = async (
@@ -389,39 +242,34 @@ const getChatInfo = async (
 ) => {
   const chatId = req.body.chatId as string;
 
-  db.get(
-    "SELECT * FROM chats WHERE chatId = ?",
-    [chatId],
-    (err: { message: any }, row: ChatInfoModel) => {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ error: "Failed to retrieve chat info" });
-      }
+  try {
+    const chat = (await Chat.findByPk(chatId)) as ChatInfoModel;
 
-      if (!row) {
-        return res.status(404).json({ error: "Chat not found" });
-      }
-
-      // Respond with the chat info from the database
-      return res.json({
-        status: {
-          code: 200,
-          message: "OK",
-        },
-        data: {
-          chatInfo: {
-            chatId: row.chatId,
-            chatName: row.chatName,
-            messages: JSON.parse(row.messages as unknown as string),
-            userId: row.userId,
-            personaId: row.personaId,
-            createdAt: row.createdAt,
-            updatedAt: row.updatedAt,
-          },
-        },
-      });
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found" });
     }
-  );
+
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        chatInfo: {
+          chatId: chat.chatId,
+          chatName: chat.chatName,
+          messages: JSON.parse(chat.messages as unknown as string),
+          userId: chat.userId,
+          personaId: chat.personaId,
+          createdAt: chat.createdAt,
+          updatedAt: chat.updatedAt,
+        },
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to retrieve chat info" });
+  }
 };
 
 // Respond to user message
@@ -439,48 +287,35 @@ export const postQueryMessage = async (req: Request, res: Response) => {
     message: responseMessage,
   };
 
-  // Put the message and response message into the database of chat
-  db.get(
-    "SELECT * FROM chats WHERE chatId = ?",
-    [chatId],
-    (err: { message: any }, row: ChatInfoModel) => {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ error: "Failed to retrieve chat info" });
-      }
+  try {
+    const chat = (await Chat.findByPk(chatId)) as ChatInfoModel;
 
-      if (!row) {
-        return res.status(404).json({ error: "Chat not found" });
-      }
-
-      const messages = JSON.parse(
-        row.messages as unknown as string
-      ) as ChatMessageModel[];
-      messages.push(messageModel);
-      messages.push(responseMessageModel);
-
-      db.run(
-        "UPDATE chats SET messages = ?, updatedAt = ? WHERE chatId = ?",
-        [JSON.stringify(messages), Date.now(), chatId],
-        (err: { message: any }) => {
-          if (err) {
-            console.error(err.message);
-            return res
-              .status(500)
-              .json({ error: "Failed to update chat info" });
-          }
-
-          return res.json({
-            status: {
-              code: 200,
-              message: "OK",
-            },
-            data: {
-              message: responseMessageModel,
-            },
-          });
-        }
-      );
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found" });
     }
-  );
+
+    const messages = JSON.parse(
+      chat.messages as unknown as string
+    ) as ChatMessageModel[];
+    messages.push(messageModel);
+    messages.push(responseMessageModel);
+
+    await Chat.update(
+      { messages: JSON.stringify(messages), updatedAt: Date.now() },
+      { where: { chatId } }
+    );
+
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        message: responseMessageModel,
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to update chat info" });
+  }
 };

@@ -2,6 +2,9 @@ import express from "express";
 import ChatRouter from "./routes/chatRoutes";
 import cors from "cors";
 import DashboardRouter from "./routes/dashboardRoutes";
+import AuthRouter from "./routes/authRoutes";
+
+const { sequelize, User, Persona, Chat } = require("./models"); // Import models
 
 const app = express();
 
@@ -25,5 +28,6 @@ app.get("/api/hello", (req, res) => {
 // Use different routes for different APIs
 app.use("/api", ChatRouter);
 app.use("/api", DashboardRouter);
+app.use("/api", AuthRouter);
 
 export default app;

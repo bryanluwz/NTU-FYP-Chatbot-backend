@@ -4,30 +4,27 @@ import {
   PersonaModel,
 } from "../typings/dashboardTypings";
 
-import db from "../database";
+import { Persona } from "../models/Persona";
 import { HTTPResponseErrorWrapper } from "../typings";
 
-export const getAvailableChats = (
+export const getAvailableChats = async (
   req: Request,
   res: Response<GetPersonaResponseModel | HTTPResponseErrorWrapper>
 ) => {
-  db.all(
-    "SELECT * FROM personas",
-    (err: { message: any }, rows: PersonaModel[]) => {
-      if (err) {
-        console.error(err.message);
-        return res.status(500).json({ error: "Failed to retrieve chats" });
-      }
+  try {
+    const personas = (await Persona.findAll()) as PersonaModel[];
 
-      return res.json({
-        status: {
-          code: 200,
-          message: "OK",
-        },
-        data: {
-          personas: rows,
-        },
-      });
-    }
-  );
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        personas,
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to retrieve chats" });
+  }
 };
