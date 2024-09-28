@@ -1,17 +1,16 @@
 import express from "express";
 import {
+  authenticateToken,
   getUser,
   loginUser,
   registerUser,
 } from "../controllers/authController";
 
-const authMiddleware = require("../middleware/auth");
-
 const AuthRouter = express.Router();
 
 // Register a new user
-AuthRouter.post("/register", registerUser);
-AuthRouter.post("/login", loginUser);
-AuthRouter.get("/user", authMiddleware, getUser);
+AuthRouter.post("/auth/register", registerUser);
+AuthRouter.post("/auth/login", loginUser);
+AuthRouter.post("/auth/user", authenticateToken, getUser);
 
 export default AuthRouter;

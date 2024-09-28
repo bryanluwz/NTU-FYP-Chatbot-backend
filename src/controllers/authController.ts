@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
@@ -132,6 +132,7 @@ export const getUser = async (
 ) => {
   try {
     const { userId } = req.body as GetUserRequestModel;
+    console.log(userId);
 
     const user = await User.findByPk(userId, {
       attributes: ["id", "username", "email", "createdAt", "updatedAt"],
@@ -156,4 +157,31 @@ export const getUser = async (
     console.error(err.message);
     res.status(500).send({ error: "Server error." });
   }
+};
+
+export const authenticateToken = (
+  req: Request,
+  res: Response<HTTPResponseErrorWrapper>,
+  next: NextFunction
+) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Get token from "Bearer TOKEN" format
+
+  if (!token)
+    return res.status(401).json({ error: "Access denied. No token provided." });
+
+  if (!process.env.JWT_SECRET) {
+    return res.status(500).json({ error: "Server configuration error." });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(403).json({ error: "Invalid token." });
+    }
+
+    // Attach user details to the request object
+    req.body.userId = (user as any).userId; // Attach fetched user details
+    next(); // Proceed to the next middleware or route handler
+  });
 };

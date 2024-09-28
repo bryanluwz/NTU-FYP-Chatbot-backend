@@ -26,7 +26,7 @@ export const getChatList = async (
   req: Request,
   res: Response<GetChatListResponseModel | HTTPResponseErrorWrapper>
 ) => {
-  const userId = "123"; // Hardcoded user ID for now
+  const userId = req.body.userId;
 
   try {
     const chats = (await Chat.findAll({
@@ -53,7 +53,7 @@ export const getUserInfo = async (
   req: Request,
   res: Response<GetUserInfoResponseModel | HTTPResponseErrorWrapper>
 ) => {
-  const userId = "123"; // Hardcoded user ID for now
+  const userId = req.body.userId;
 
   try {
     const user = (await User.findByPk(userId)) as UserInfoModel;
@@ -149,7 +149,7 @@ const createChat = async (
       userId,
       personaId,
       chatName,
-      messages: JSON.stringify(messages),
+      messages: messages,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -241,10 +241,8 @@ const getChatInfo = async (
   res: Response<GetChatInfoResponseModel | HTTPResponseErrorWrapper>
 ) => {
   const chatId = req.body.chatId as string;
-
   try {
     const chat = (await Chat.findByPk(chatId)) as ChatInfoModel;
-
     if (!chat) {
       return res.status(404).json({ error: "Chat not found" });
     }
@@ -258,7 +256,7 @@ const getChatInfo = async (
         chatInfo: {
           chatId: chat.chatId,
           chatName: chat.chatName,
-          messages: JSON.parse(chat.messages as unknown as string),
+          messages: chat.messages,
           userId: chat.userId,
           personaId: chat.personaId,
           createdAt: chat.createdAt,
@@ -294,14 +292,12 @@ export const postQueryMessage = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Chat not found" });
     }
 
-    const messages = JSON.parse(
-      chat.messages as unknown as string
-    ) as ChatMessageModel[];
+    const messages = chat.messages;
     messages.push(messageModel);
     messages.push(responseMessageModel);
 
     await Chat.update(
-      { messages: JSON.stringify(messages), updatedAt: Date.now() },
+      { messages: messages, updatedAt: Date.now() },
       { where: { chatId } }
     );
 
