@@ -4,8 +4,6 @@ import cors from "cors";
 import DashboardRouter from "./routes/dashboardRoutes";
 import AuthRouter from "./routes/authRoutes";
 
-const { sequelize, User, Persona, Chat } = require("./models"); // Import models
-
 const app = express();
 
 // Enable CORS for all routes
