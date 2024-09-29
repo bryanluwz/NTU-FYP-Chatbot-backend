@@ -276,26 +276,25 @@ export const postQueryMessage = async (req: Request, res: Response) => {
   const chatId = req.body.chatId as string;
   const userId = req.body.userId as string;
 
-  if (chatId !== userId) {
-    return res.status(403).json({ error: "Unauthorized" });
-  }
-
-  const message = req.body.message as ChatMessageModel;
-  const responseMessage = getMockResponseMessage(); // This is where the message should be generated
-
-  const messageModel: ChatMessageModel = message;
-  const responseMessageModel: ChatMessageModel = {
-    messageId: Date.now().toString(),
-    userType: ChatUserTypeEnum.AI,
-    message: responseMessage,
-  };
-
   try {
     const chat = (await Chat.findByPk(chatId)) as ChatInfoModel;
 
     if (!chat) {
       return res.status(404).json({ error: "Chat not found" });
     }
+    if (chat.userId !== userId) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    const message = req.body.message as ChatMessageModel;
+    const responseMessage = getMockResponseMessage(); // This is where the message should be generated
+
+    const messageModel: ChatMessageModel = message;
+    const responseMessageModel: ChatMessageModel = {
+      messageId: Date.now().toString(),
+      userType: ChatUserTypeEnum.AI,
+      message: responseMessage,
+    };
 
     const messages = chat.messages;
     messages.push(messageModel);

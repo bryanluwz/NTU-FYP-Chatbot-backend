@@ -132,7 +132,6 @@ export const getUser = async (
 ) => {
   try {
     const { userId } = req.body as GetUserRequestModel;
-    console.log(userId);
 
     const user = await User.findByPk(userId, {
       attributes: ["id", "username", "email", "createdAt", "updatedAt"],
