@@ -29,6 +29,7 @@ export interface ChatInfoModel extends MinimumChatInfoModel {
 
 export interface UserInfoModel {
   id: string;
+  password?: string; // hashed
   username: string;
   email: string;
   avatar: string;

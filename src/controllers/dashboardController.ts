@@ -46,15 +46,18 @@ export const getUserList = async (
   }
 
   try {
-    const users = (await User.findAll()) as UserInfoModel[];
-
+    const users = await User.findAll();
+    const usersWithoutPassword = users.map((user: any) => {
+      const { password, ...userWithoutPassword } = user.toJSON();
+      return userWithoutPassword;
+    }) as UserInfoModel[];
     return res.json({
       status: {
         code: 200,
         message: "OK",
       },
       data: {
-        users: users,
+        users: usersWithoutPassword,
       },
     });
   } catch (err: any) {
@@ -71,11 +74,11 @@ export const updateUser = async (
   const userId = req.body.userId;
   const user = await User.findByPk(userId);
 
-  if (!user) {
+  if (!user || (user.role !== "admin" && user.userId !== userId)) {
     return res.status(404).json({ error: "Unauthorized" });
   }
 
-  const userInfo = req.body.user as UserInfoModel;
+  const userInfo = req.body.userInfo as UserInfoModel;
 
   try {
     await User.update(userInfo, { where: { id: userInfo.id } });
@@ -100,11 +103,11 @@ export const deleteUser = async (
   const userId = req.body.userId;
   const user = await User.findByPk(userId);
 
-  if (!user) {
+  if (!user || user.role !== "admin") {
     return res.status(404).json({ error: "Unauthorized" });
   }
 
-  const userInfo = req.body.user as UserInfoModel;
+  const userInfo = req.body.userInfo as UserInfoModel;
 
   try {
     await User.destroy({ where: { id: userInfo.id } });
@@ -129,7 +132,7 @@ export const createUser = async (
   const userId = req.body.userId;
   const user = await User.findByPk(userId);
 
-  if (!user) {
+  if (!user || user.role !== "admin") {
     return res.status(404).json({ error: "Unauthorized" });
   }
 

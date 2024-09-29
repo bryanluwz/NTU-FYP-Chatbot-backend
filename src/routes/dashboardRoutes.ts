@@ -17,8 +17,9 @@ DashboardRouter.get(
   getAvailableChats
 );
 DashboardRouter.get("/dashboard/admin/users", authenticateToken, getUserList);
-DashboardRouter.post("/dashboard/admin/update", authenticateToken, updateUser);
-DashboardRouter.post("/dashboard/admin/delete", authenticateToken, deleteUser);
-DashboardRouter.post("/dashboard/admin/create", authenticateToken, createUser);
+
+DashboardRouter.post("/user/create", authenticateToken, createUser);
+DashboardRouter.post("/user/update", authenticateToken, updateUser);
+DashboardRouter.post("/user/delete", authenticateToken, deleteUser);
 
 export default DashboardRouter;
