@@ -1,5 +1,5 @@
 import { Persona } from "../models";
-import { personasMockData } from "../controllers/mockdata";
+import { personasMockData } from "./mockdata";
 
 const initializePersonas = async () => {
   try {

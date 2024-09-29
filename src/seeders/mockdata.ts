@@ -1,4 +1,6 @@
 import { PersonaModel } from "../typings/dashboardTypings";
+import { v4 as uuidv4 } from "uuid";
+import { UserRoleEnum } from "../typings/enums";
 
 export const getMockResponseMessage = () => {
   const fakeResponseList = [
@@ -134,5 +136,117 @@ export const personasMockData: PersonaModel[] = [
     personaAvatar: "https://via.placeholder.com/150",
     createdAt: 526117610000,
     updatedAt: 1726117610000,
+  },
+];
+
+// Fake users, admin, educators, and students (users)
+// 2 Admins, 4 Educators, 7 Students
+export const usersMockData = [
+  // Admins
+  {
+    id: uuidv4(),
+    username: "Pompompurin",
+    email: "admin1@nut.edu.sg",
+    avatar: "src/assets/user-avatar-default.png",
+    role: UserRoleEnum.Admin,
+    password: "pompom",
+  },
+  {
+    id: uuidv4(),
+    username: "Keroppi",
+    email: "admin2@nut.edu.sg",
+    avatar: "src/assets/user-avatar-default.png",
+    role: UserRoleEnum.Admin,
+    password: "kerokero",
+  },
+  // Educators
+  {
+    id: uuidv4(),
+    username: "Kuromi-sensei",
+    email: "educator1@nut.edu.sg",
+    avatar: "src/assets/user-avatar-default.png",
+    role: UserRoleEnum.Educator,
+    password: "kuromimi",
+  },
+  {
+    id: uuidv4(),
+    username: "Badtz-sensei",
+    email: "educator2@nut.edu.sg",
+    avatar: "src/assets/user-avatar-default.png",
+    role: UserRoleEnum.Educator,
+    password: "badtzPenguin",
+  },
+  {
+    id: uuidv4(),
+    username: "My Melody-sensei",
+    email: "educator3@nut.edu.sg",
+    avatar: "src/assets/user-avatar-default.png",
+    role: UserRoleEnum.Educator,
+    password: "melonpan",
+  },
+  {
+    id: uuidv4(),
+    username: "Pochacco-sensei",
+    email: "educator4@nut.edu.sg",
+    avatar: "src/assets/user-avatar-default.png",
+    role: UserRoleEnum.Educator,
+    password: "pocharin",
+  },
+  // Students
+  {
+    id: uuidv4(),
+    username: "Jason",
+    email: "student001@nut.edu.sg",
+    avatar: "",
+    role: UserRoleEnum.User,
+    password: "gayson",
+  },
+  {
+    id: uuidv4(),
+    username: "Eren",
+    email: "student002@nut.edu.sg",
+    avatar: "",
+    role: UserRoleEnum.User,
+    password: "tatakae",
+  },
+  {
+    id: uuidv4(),
+    username: "金正恩",
+    email: "student003@nut.edu.sg",
+    avatar: "",
+    role: UserRoleEnum.User,
+    password: "iloveamerica",
+  },
+  {
+    id: uuidv4(),
+    username: "LeBron James",
+    email: "student004@nut.edu.sg",
+    avatar: "",
+    role: UserRoleEnum.User,
+    password: "lebronjaames",
+  },
+  {
+    id: uuidv4(),
+    username: "Donald Trump",
+    email: "student005@nut.edu.sg",
+    avatar: "",
+    role: UserRoleEnum.User,
+    password: "obamna",
+  },
+  {
+    id: uuidv4(),
+    username: "糸瀬 雪",
+    email: "student006@nut.edu.sg",
+    avatar: "",
+    role: UserRoleEnum.User,
+    password: "daddyitsuomi",
+  },
+  {
+    id: uuidv4(),
+    username: "Anwar Ibrahim",
+    email: "student007@nut.edu.sg",
+    avatar: "",
+    role: UserRoleEnum.User,
+    password: "pwsvoteforme",
   },
 ];

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getMockResponseMessage } from "./mockdata";
+import { getMockResponseMessage } from "../seeders/mockdata";
 import {
   ChatInfoModel,
   ChatListModel,
@@ -274,6 +274,11 @@ const getChatInfo = async (
 export const postQueryMessage = async (req: Request, res: Response) => {
   await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate delay
   const chatId = req.body.chatId as string;
+  const userId = req.body.userId as string;
+
+  if (chatId !== userId) {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
 
   const message = req.body.message as ChatMessageModel;
   const responseMessage = getMockResponseMessage(); // This is where the message should be generated

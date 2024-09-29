@@ -1,5 +1,8 @@
 import express from "express";
-import { getAvailableChats } from "../controllers/dashboardController";
+import {
+  getAvailableChats,
+  getUserList,
+} from "../controllers/dashboardController";
 import { authenticateToken } from "../controllers/authController";
 
 const DashboardRouter = express.Router();
@@ -10,5 +13,6 @@ DashboardRouter.get(
   authenticateToken,
   getAvailableChats
 );
+DashboardRouter.get("/dashboard/admin/users", authenticateToken, getUserList);
 
 export default DashboardRouter;
