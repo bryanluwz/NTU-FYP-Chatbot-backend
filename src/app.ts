@@ -3,6 +3,7 @@ import ChatRouter from "./routes/chatRoutes";
 import cors from "cors";
 import DashboardRouter from "./routes/dashboardRoutes";
 import AuthRouter from "./routes/authRoutes";
+import UserRouter from "./routes/userRoute";
 
 const app = express();
 
@@ -27,5 +28,6 @@ app.get("/api/hello", (req, res) => {
 app.use("/api", ChatRouter);
 app.use("/api", DashboardRouter);
 app.use("/api", AuthRouter);
+app.use("/api", UserRouter);
 
 export default app;

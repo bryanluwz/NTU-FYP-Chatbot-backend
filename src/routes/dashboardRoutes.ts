@@ -1,10 +1,7 @@
 import express from "express";
 import {
-  createUser,
-  deleteUser,
   getAvailableChats,
   getUserList,
-  updateUser,
 } from "../controllers/dashboardController";
 import { authenticateToken } from "../controllers/authController";
 
@@ -17,9 +14,5 @@ DashboardRouter.get(
   getAvailableChats
 );
 DashboardRouter.get("/dashboard/admin/users", authenticateToken, getUserList);
-
-DashboardRouter.post("/user/create", authenticateToken, createUser);
-DashboardRouter.post("/user/update", authenticateToken, updateUser);
-DashboardRouter.post("/user/delete", authenticateToken, deleteUser);
 
 export default DashboardRouter;
