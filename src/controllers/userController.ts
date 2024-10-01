@@ -62,8 +62,6 @@ export const updateUser = async (
       }
     }
 
-    console.log("userInfo", userInfo);
-
     await User.update(userInfo, { where: { id: userInfo.id } });
 
     return res.json({
@@ -85,12 +83,12 @@ export const deleteUser = async (
 ) => {
   const userId = req.userId;
   const user = await User.findByPk(userId);
+  const userInfo = req.body.userInfo as UserInfoModel;
 
-  if (!user || user.role !== "admin" || user.id === userId) {
+  if (!user || user.role !== "admin" || userInfo.id === userId) {
+    // Check admin or delete self
     return res.status(404).json({ error: "Unauthorized" });
   }
-
-  const userInfo = req.body.userInfo as UserInfoModel;
 
   try {
     await User.destroy({ where: { id: userInfo.id } });
