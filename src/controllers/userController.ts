@@ -42,9 +42,9 @@ export const updateUser = async (
     // Upload avatar here
     if (avatar) {
       // Generate a unique filename for the avatar
-      const avatarFilename = `${
-        userInfo.username
-      }_avatar_${uuidv4()}${path.extname(avatar.originalname)}`;
+      const avatarFilename = `avatar_${uuidv4()}${path.extname(
+        avatar.originalname
+      )}`;
       const avatarPath = path.join(databaseAvatarStoragePath, avatarFilename); // Adjust path as needed
 
       // Upload avatar: save the file locally to the 'uploads' folder
