@@ -1,17 +1,25 @@
 import { HTTPStatusBody } from "../typings";
+import { UserInfoModel } from "./chatTypings";
 
-export interface AvailableChatModel {
-  chatId: string;
-  chatName: string;
-  chatDescription: string;
-  chatAvatar?: string;
+export interface PersonaModel {
+  personaId: string;
+  personaName: string;
+  personaDescription: string;
+  personaAvatar?: string;
   createdAt: number; // timestamp epoch
   updatedAt: number;
 }
 
-export interface GetAvailableChatsResponseModel {
+export interface GetPersonaResponseModel {
   status: HTTPStatusBody;
   data: {
-    availableChats: AvailableChatModel[];
+    personas: PersonaModel[];
+  };
+}
+
+export interface GetUserListResponseModel {
+  status: HTTPStatusBody;
+  data: {
+    users: UserInfoModel[];
   };
 }
