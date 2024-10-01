@@ -3,8 +3,6 @@ import { UserRoleEnum } from "../typings/enums";
 
 const { DataTypes } = require("sequelize");
 
-const DefaultUserAvatar = "src/assets/user-avatar-default.png";
-
 const User = sequelize.define(
   "User",
   {
@@ -42,7 +40,8 @@ const User = sequelize.define(
     },
     avatar: {
       type: DataTypes.STRING,
-      defaultValue: DefaultUserAvatar,
+      allowNull: true,
+      defaultValue: "",
     },
   },
   {

@@ -131,7 +131,7 @@ export const getUser = async (
   res: Response<GetUserResponseModel | HTTPResponseErrorWrapper>
 ) => {
   try {
-    const { userId } = req.body as GetUserRequestModel;
+    const { userId } = req as GetUserRequestModel;
 
     const user = await User.findByPk(userId, {
       attributes: ["id", "username", "email", "createdAt", "updatedAt"],
@@ -180,7 +180,7 @@ export const authenticateToken = (
     }
 
     // Attach user details to the request object
-    req.body.userId = (user as any).userId; // Attach fetched user details
+    req.userId = (user as any).userId; // Attach fetched user details
     next(); // Proceed to the next middleware or route handler
   });
 };

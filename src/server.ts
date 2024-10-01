@@ -1,9 +1,17 @@
 import app from "./app";
-import initializeChats from "./seeders/init_chats";
 import initializePersonas from "./seeders/init_personas";
 import initializeUsers from "./seeders/init_users";
 import { User } from "./models";
 import sequelize from "./database/sequelize";
+
+// So that I could goddamn add a userId to the goddamn request
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: string;
+    }
+  }
+}
 
 require("dotenv").config();
 
@@ -13,7 +21,6 @@ const PORT = process.env.PORT || 3000;
 const initMockData = async () => {
   await initializeUsers();
   await initializePersonas();
-  await initializeChats();
 };
 
 sequelize

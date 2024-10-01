@@ -19,14 +19,12 @@ import { User } from "../models/User";
 import { Persona } from "../models/Persona";
 import { PersonaModel } from "../typings/dashboardTypings";
 
-const DefaultUserAvatar = "src/assets/user-avatar-default.png";
-
 // Example of getting users
 export const getChatList = async (
   req: Request,
   res: Response<GetChatListResponseModel | HTTPResponseErrorWrapper>
 ) => {
-  const userId = req.body.userId;
+  const userId = req.userId;
 
   try {
     const chats = (await Chat.findAll({
@@ -46,40 +44,6 @@ export const getChatList = async (
   } catch (err: any) {
     console.error(err.message);
     return res.status(500).json({ error: "Failed to retrieve chat list" });
-  }
-};
-
-export const getUserInfo = async (
-  req: Request,
-  res: Response<GetUserInfoResponseModel | HTTPResponseErrorWrapper>
-) => {
-  const userId = req.body.userId;
-
-  try {
-    const user = (await User.findByPk(userId)) as UserInfoModel;
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    return res.json({
-      status: {
-        code: 200,
-        message: "OK",
-      },
-      data: {
-        userInfo: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role,
-          avatar: DefaultUserAvatar, // Default avatar for now
-        },
-      },
-    });
-  } catch (err: any) {
-    console.error(err.message);
-    return res.status(500).json({ error: "Failed to retrieve user info" });
   }
 };
 
@@ -105,7 +69,7 @@ const createChat = async (
   res: Response<GetMinimumChatInfoResponseModel | HTTPResponseErrorWrapper>
 ) => {
   const personaId = req.body.personaId as string;
-  const userId = req.body.userId as string;
+  const userId = req.userId as string;
 
   try {
     const existingChat = await Chat.findOne({
@@ -273,8 +237,8 @@ const getChatInfo = async (
 // Respond to user message
 export const postQueryMessage = async (req: Request, res: Response) => {
   await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate delay
-  const chatId = req.body.chatId as string;
-  const userId = req.body.userId as string;
+  const chatId = req.body.chatId;
+  const userId = req.userId;
 
   try {
     const chat = (await Chat.findByPk(chatId)) as ChatInfoModel;

@@ -37,7 +37,7 @@ export const getUserList = async (
   req: Request,
   res: Response<GetUserListResponseModel | HTTPResponseErrorWrapper>
 ) => {
-  const userId = req.body.userId;
+  const userId = req.userId;
 
   // Check if user is an admin
   const user = await User.findByPk(userId);
