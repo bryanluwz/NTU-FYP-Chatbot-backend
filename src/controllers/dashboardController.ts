@@ -51,13 +51,16 @@ export const getUserList = async (
       const { password, ...userWithoutPassword } = user.toJSON();
       return userWithoutPassword;
     }) as UserInfoModel[];
+    const formattedUsers = usersWithoutPassword.map((user) => {
+      return { ...user, avatar: `/avatars/${user.avatar}` };
+    });
     return res.json({
       status: {
         code: 200,
         message: "OK",
       },
       data: {
-        users: usersWithoutPassword,
+        users: formattedUsers,
       },
     });
   } catch (err: any) {

@@ -42,7 +42,7 @@ export const updateUser = async (
     // Upload avatar here
     if (avatar) {
       // Generate a unique filename for the avatar
-      const avatarFilename = `avatar_${uuidv4()}${path.extname(
+      const avatarFilename = `avatar_${userInfo.id}${path.extname(
         avatar.originalname
       )}`;
       const avatarPath = path.join(databaseAvatarStoragePath, avatarFilename); // Adjust path as needed
@@ -56,9 +56,13 @@ export const updateUser = async (
       // Remove original avatar file
       if (user.avatar) {
         const avatarPath = path.join(databaseAvatarStoragePath, user.avatar);
-        fs.unlinkSync(avatarPath);
+        if (fs.existsSync(avatarPath)) {
+          fs.unlinkSync(avatarPath);
+        }
       }
     }
+
+    console.log("userInfo", userInfo);
 
     await User.update(userInfo, { where: { id: userInfo.id } });
 
@@ -82,7 +86,7 @@ export const deleteUser = async (
   const userId = req.userId;
   const user = await User.findByPk(userId);
 
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== "admin" || user.id === userId) {
     return res.status(404).json({ error: "Unauthorized" });
   }
 
