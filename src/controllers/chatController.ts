@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { getMockResponseMessage } from "../seeders/mockdata";
 import {
   ChatInfoModel,
   ChatListModel,
@@ -18,6 +17,7 @@ import { Chat } from "../models/Chat";
 import { User } from "../models/User";
 import { Persona } from "../models/Persona";
 import { PersonaModel } from "../typings/dashboardTypings";
+import { postQueryMessageApi } from "../apis";
 
 // Example of getting users
 export const getChatList = async (
@@ -251,7 +251,12 @@ export const postQueryMessage = async (req: Request, res: Response) => {
     }
 
     const message = req.body.message as ChatMessageModel;
-    const responseMessage = getMockResponseMessage(); // This is where the message should be generated
+
+    const responseMessageResponse = await postQueryMessageApi({
+      personaId: chat.personaId,
+      message: message.message,
+    });
+    const responseMessage = responseMessageResponse.data.response;
 
     const messageModel: ChatMessageModel = message;
     const responseMessageModel: ChatMessageModel = {

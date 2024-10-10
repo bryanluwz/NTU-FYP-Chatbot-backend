@@ -2,26 +2,6 @@ import { PersonaModel } from "../typings/dashboardTypings";
 import { v4 as uuidv4 } from "uuid";
 import { UserRoleEnum } from "../typings/enums";
 
-export const getMockResponseMessage = () => {
-  const fakeResponseList = [
-    "I'm sorry, I don't understand.",
-    "If only I could understand you.",
-    "明月几时有，把酒问青天。不知天上宫阙，今夕是何年。我欲乘风过去，惟恐琼楼玉宇。高处不胜寒，起舞弄清影，何似在人间。",
-    "对不起，我不明白。",
-    "申し訳ございません、英語は全然わかりません。",
-    "これは超長いの返事みたいね、ここで私と一緒に待ってね？いやなの？( ,,`･ω･´)ﾝﾝﾝ？",
-    `Somebody once told me the world is gonna roll me,
-I ain't the sharpest tool in the shed,
-She was looking kind of dumb with her finger and her thumb,
-In the shape of an "L" on her forehead`,
-  ];
-
-  const responseMessage =
-    fakeResponseList[Math.floor(Math.random() * fakeResponseList.length)];
-
-  return responseMessage;
-};
-
 // Dashboard
 export const personasMockData: PersonaModel[] = [
   {
