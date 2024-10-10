@@ -86,6 +86,11 @@ export const loginUser = async (
   try {
     // Check for user
     let user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      user = await User.findOne({ where: { username: email } });
+    }
+
     if (!user) return res.status(400).json({ error: "Invalid credentials." });
 
     // Validate password

@@ -42,16 +42,10 @@ export const updateUser = async (
     // Upload avatar here
     if (avatar) {
       // Generate a unique filename for the avatar
-      const avatarFilename = `avatar_${userInfo.id}${path.extname(
+      const avatarFilename = `avatar_${uuidv4()}${path.extname(
         avatar.originalname
       )}`;
       const avatarPath = path.join(databaseAvatarStoragePath, avatarFilename); // Adjust path as needed
-
-      // Upload avatar: save the file locally to the 'uploads' folder
-      fs.writeFileSync(avatarPath, avatar.buffer);
-
-      // Save the path (or URL if hosted) to userInfo
-      userInfo.avatar = `${avatarFilename}`; // Adjust path for how you'll serve the file
 
       // Remove original avatar file
       if (user.avatar) {
@@ -60,6 +54,12 @@ export const updateUser = async (
           fs.unlinkSync(avatarPath);
         }
       }
+
+      // Upload avatar: save the file locally to the 'uploads' folder
+      fs.writeFileSync(avatarPath, avatar.buffer);
+
+      // Save the path (or URL if hosted) to userInfo
+      userInfo.avatar = `${avatarFilename}`; // Adjust path for how you'll serve the file
     }
 
     await User.update(userInfo, { where: { id: userInfo.id } });
