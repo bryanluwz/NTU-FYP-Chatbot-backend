@@ -27,6 +27,10 @@ const Chat = sequelize.define(
         (this as any).setDataValue("messages", JSON.stringify(value));
       },
     },
+    personaId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt fields
@@ -34,10 +38,10 @@ const Chat = sequelize.define(
 );
 
 // Define Associations
-User.hasMany(Chat, { foreignKey: "userId" });
-Chat.belongsTo(User, { foreignKey: "userId" });
+// User.hasMany(Chat, { foreignKey: "userId" });
+// Chat.belongsTo(User, { foreignKey: "userId" });
 
-Persona.hasMany(Chat, { foreignKey: "personaId" });
-Chat.belongsTo(Persona, { foreignKey: "personaId" });
+// Persona.hasMany(Chat, { foreignKey: "personaId" });
+// Chat.belongsTo(Persona, { foreignKey: "personaId" });
 
 export { Chat };

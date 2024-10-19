@@ -211,4 +211,4 @@ export const getUserInfo = async (
   }
 };
 
-export const uploadMiddleware = upload.single("avatar"); // 'avatar' is the field name for the image
+export const uploadUserMiddleware = upload.single("avatar"); // 'avatar' is the field name for the image

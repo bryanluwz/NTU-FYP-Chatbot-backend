@@ -1,3 +1,4 @@
+import { User } from ".";
 import sequelize from "../database/sequelize";
 const { DataTypes } = require("sequelize");
 
@@ -22,10 +23,21 @@ const Persona = sequelize.define(
       allowNull: true,
       defaultValue: "default_persona.png", // Default avatar
     },
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    documentSrc: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Persona.belongsTo(User, { foreignKey: "userId" });
+// User.hasMany(Persona, { foreignKey: "userId" });
 
 export { Persona };

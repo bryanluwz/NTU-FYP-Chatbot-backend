@@ -11,4 +11,7 @@ Chat.belongsTo(User, { foreignKey: "userId" });
 Persona.hasMany(Chat, { foreignKey: "personaId" });
 Chat.belongsTo(Persona, { foreignKey: "personaId" });
 
+User.hasMany(Persona, { foreignKey: "userId" });
+Persona.belongsTo(User, { foreignKey: "userId" });
+
 export { sequelize, User, Persona, Chat };

@@ -5,7 +5,7 @@ import {
   getUserInfo,
   udpateUserPassword,
   updateUser,
-  uploadMiddleware,
+  uploadUserMiddleware,
 } from "../controllers/userController";
 import { authenticateToken } from "../controllers/authController";
 
@@ -15,7 +15,7 @@ UserRouter.post("/user/create", authenticateToken, createUser);
 UserRouter.post(
   "/user/update",
   authenticateToken,
-  uploadMiddleware,
+  uploadUserMiddleware,
   updateUser
 );
 UserRouter.post("/user/delete", authenticateToken, deleteUser);

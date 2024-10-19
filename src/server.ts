@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 // Start the server after syncing the database
 const initMockData = async () => {
   await initializeUsers();
-  await initializePersonas();
+  // await initializePersonas();
 };
 
 sequelize

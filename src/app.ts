@@ -5,6 +5,7 @@ import DashboardRouter from "./routes/dashboardRoutes";
 import AuthRouter from "./routes/authRoutes";
 import UserRouter from "./routes/userRoute";
 import path from "path";
+import PersonaRouter from "./routes/personaRoutes";
 
 require("dotenv").config();
 
@@ -36,6 +37,7 @@ app.use("/api", ChatRouter);
 app.use("/api", DashboardRouter);
 app.use("/api", AuthRouter);
 app.use("/api", UserRouter);
+app.use("/api", PersonaRouter);
 
 // Host React frontend
 app.use(
