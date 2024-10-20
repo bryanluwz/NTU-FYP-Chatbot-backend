@@ -6,18 +6,21 @@ import {
   GetChatInfoResponseModel,
   GetChatListResponseModel,
   GetMinimumChatInfoResponseModel,
-  GetUserInfoResponseModel,
-  UserInfoModel,
 } from "../typings/chatTypings";
 
 import { HTTPResponseEmptyWrapper, HTTPResponseErrorWrapper } from "../typings";
 import { ChatUserTypeEnum } from "../typings/enums";
 import { v4 as uuidv4 } from "uuid";
 import { Chat } from "../models/Chat";
-import { User } from "../models/User";
 import { Persona } from "../models/Persona";
 import { PersonaModel } from "../typings/dashboardTypings";
-import { postQueryMessageApi } from "../apis";
+import { postQueryMessageApi, transferDocumentSrcApi } from "../apis";
+import path from "path";
+
+const databaseDocumentsStoragePath = path.resolve(
+  process.cwd(),
+  process.env.DOCUMENTS_STORAGE || "documents"
+);
 
 // Example of getting users
 export const getChatList = async (
@@ -252,11 +255,61 @@ export const postQueryMessage = async (req: Request, res: Response) => {
 
     const message = req.body.message as ChatMessageModel;
 
-    const responseMessageResponse = await postQueryMessageApi({
+    let responseMessageResponse = await postQueryMessageApi({
       personaId: chat.personaId,
       message: message.message,
     });
+
+    if (responseMessageResponse?.status?.code === 201) {
+      console.log(
+        "Failed to get reponse from AI server, since document is not found"
+      );
+      // Need to send over the document source
+      try {
+        // Get document source from persona
+        const persona = await Persona.findByPk(chat.personaId);
+        if (!persona) {
+          return res.status(404).json({ error: "Persona not found" });
+        }
+
+        const documentSrcPath = persona.documentSrc;
+        if (!documentSrcPath) {
+          return res.status(404).json({ error: "Document source not found" });
+        }
+
+        const documentAbsPath = path.resolve(
+          databaseDocumentsStoragePath,
+          documentSrcPath
+        );
+
+        console.log("Document source path: ", documentAbsPath);
+
+        const _response = await transferDocumentSrcApi({
+          personaId: chat.personaId,
+          documentSrcPath: documentAbsPath,
+        });
+      } catch (err: any) {
+        console.error(err.message);
+        return {
+          status: {
+            code: 200,
+            message: "OK",
+          },
+          data: {
+            message:
+              "An error occured when transfering document source, please contact admin :0",
+          },
+        };
+      }
+    }
+
+    responseMessageResponse = await postQueryMessageApi({
+      personaId: chat.personaId,
+      message: message.message,
+    });
+
     const responseMessage = responseMessageResponse.data.response;
+    // const responseMessage = "Coming soon";
 
     const messageModel: ChatMessageModel = message;
     const responseMessageModel: ChatMessageModel = {

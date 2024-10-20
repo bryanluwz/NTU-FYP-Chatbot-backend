@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Persona, User } from "../models";
+import { Chat, Persona, User } from "../models";
 import { HTTPResponseEmptyWrapper, HTTPResponseErrorWrapper } from "../typings";
 import {
   GetPersonaResponseModel,
@@ -328,5 +328,43 @@ export const deletePersona = async (
   } catch (err: any) {
     console.error(err.message);
     return res.status(500).json({ error: "Failed to delete persona" });
+  }
+};
+
+export const getPersona = async (req: Request, res: Response) => {
+  try {
+    // Extract the personaId from the request params
+    const { id: chatId } = req.params;
+    const chat = await Chat.findByPk(chatId);
+
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found" });
+    }
+
+    const personaId = chat?.personaId;
+
+    const persona = (await Persona.findByPk(personaId)) as PersonaModel;
+
+    if (!persona) {
+      return res.status(404).json({ error: "Persona not found" });
+    }
+
+    const avatarPath = path.join(
+      "/avatars",
+      persona.personaAvatar ?? "default"
+    );
+
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        personas: [{ ...persona, personaAvatar: avatarPath }],
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to retrieve persona avatar" });
   }
 };
