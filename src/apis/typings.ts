@@ -1,5 +1,8 @@
+import { ChatMessageModel } from "../typings/chatTypings";
+
 export interface PostQueryMessageApiRequestModel {
   personaId: string;
+  chatHistory: ChatMessageModel[];
   message: string;
 }
 

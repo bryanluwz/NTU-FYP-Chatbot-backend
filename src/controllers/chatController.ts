@@ -253,11 +253,14 @@ export const postQueryMessage = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "Unauthorized" });
     }
 
+    const chatHistory = chat.messages;
+
     const message = req.body.message as ChatMessageModel;
 
     let responseMessageResponse = await postQueryMessageApi({
       personaId: chat.personaId,
       message: message.message,
+      chatHistory: chatHistory,
     });
 
     if (responseMessageResponse?.status?.code === 201) {
@@ -288,6 +291,12 @@ export const postQueryMessage = async (req: Request, res: Response) => {
           personaId: chat.personaId,
           documentSrcPath: documentAbsPath,
         });
+
+        responseMessageResponse = await postQueryMessageApi({
+          personaId: chat.personaId,
+          message: message.message,
+          chatHistory: chat.messages,
+        });
       } catch (err: any) {
         console.error(err.message);
         return {
@@ -303,13 +312,7 @@ export const postQueryMessage = async (req: Request, res: Response) => {
       }
     }
 
-    responseMessageResponse = await postQueryMessageApi({
-      personaId: chat.personaId,
-      message: message.message,
-    });
-
     const responseMessage = responseMessageResponse.data.response;
-    // const responseMessage = "Coming soon";
 
     const messageModel: ChatMessageModel = message;
     const responseMessageModel: ChatMessageModel = {
