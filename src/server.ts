@@ -17,6 +17,14 @@ require("dotenv").config();
 
 const PORT = process.env.PORT || 3000;
 
+const https = require("https");
+const fs = require("fs");
+
+const options = {
+  key: fs.readFileSync("server.key"),
+  cert: fs.readFileSync("server.cert"),
+};
+
 // Start the server after syncing the database
 const initMockData = async () => {
   await initializeUsers();
@@ -35,8 +43,12 @@ sequelize
       await initMockData();
     }
 
-    app.listen(PORT as number, "0.0.0.0", () => {
-      console.log(`Server running on port ${PORT}`);
+    // app.listen(PORT as number, "0.0.0.0", () => {
+    //   console.log(`Server running on port ${PORT}`);
+    // });
+
+    https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on https://localhost:${PORT}`);
     });
   })
   .catch((err: any) => {
