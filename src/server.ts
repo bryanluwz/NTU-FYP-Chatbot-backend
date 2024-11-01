@@ -1,5 +1,4 @@
 import app from "./app";
-import initializePersonas from "./seeders/init_personas";
 import initializeUsers from "./seeders/init_users";
 import { User } from "./models";
 import sequelize from "./database/sequelize";
@@ -16,6 +15,7 @@ declare global {
 require("dotenv").config();
 
 const PORT = process.env.PORT || 3000;
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // is this a good practice idk
 
 const https = require("https");
 const fs = require("fs");
@@ -28,7 +28,6 @@ const options = {
 // Start the server after syncing the database
 const initMockData = async () => {
   await initializeUsers();
-  // await initializePersonas();
 };
 
 sequelize
@@ -42,10 +41,6 @@ sequelize
       console.log("No users found, inserting mock data...");
       await initMockData();
     }
-
-    // app.listen(PORT as number, "0.0.0.0", () => {
-    //   console.log(`Server running on port ${PORT}`);
-    // });
 
     https.createServer(options, app).listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on https://localhost:${PORT}`);
