@@ -1,9 +1,14 @@
-import { ChatMessageModel } from "../typings/chatTypings";
+import { ChatMessageModel, UserChatMessageModel } from "../typings/chatTypings";
 
 export interface PostQueryMessageApiRequestModel {
   personaId: string;
-  chatHistory: ChatMessageModel[];
-  message: string;
+  chatHistory: (UserChatMessageModel | ChatMessageModel)[];
+  message:
+    | string
+    | {
+        text: string;
+        files: (File | Blob)[];
+      };
 }
 
 export interface PostQueryMessageApiResponseModel {

@@ -6,6 +6,7 @@ import {
   GetChatInfoResponseModel,
   GetChatListResponseModel,
   GetMinimumChatInfoResponseModel,
+  UserChatMessageModel,
 } from "../typings/chatTypings";
 
 import { HTTPResponseEmptyWrapper, HTTPResponseErrorWrapper } from "../typings";
@@ -239,7 +240,6 @@ const getChatInfo = async (
 
 // Respond to user message
 export const postQueryMessage = async (req: Request, res: Response) => {
-  await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate delay
   const chatId = req.body.chatId;
   const userId = req.userId;
 
@@ -255,7 +255,7 @@ export const postQueryMessage = async (req: Request, res: Response) => {
 
     const chatHistory = chat.messages;
 
-    const message = req.body.message as ChatMessageModel;
+    const message = req.body.message as UserChatMessageModel;
 
     let responseMessageResponse = await postQueryMessageApi({
       personaId: chat.personaId,
@@ -295,7 +295,7 @@ export const postQueryMessage = async (req: Request, res: Response) => {
         responseMessageResponse = await postQueryMessageApi({
           personaId: chat.personaId,
           message: message.message,
-          chatHistory: chat.messages,
+          chatHistory: chatHistory,
         });
       } catch (err: any) {
         console.error(err.message);
@@ -314,7 +314,24 @@ export const postQueryMessage = async (req: Request, res: Response) => {
 
     const responseMessage = responseMessageResponse.data.response;
 
-    const messageModel: ChatMessageModel = message;
+    // Convert the files and images in message.message in dummy files
+    const dummyFiles = message.message.files.forEach((file) => {
+      if (file instanceof File) {
+        return new File([], "dummy.txt");
+      } else if (file instanceof Blob) {
+        return new File([], "image.png");
+      }
+    });
+
+    const messageModel: ChatMessageModel = {
+      messageId: message.messageId,
+      userType: message.userType,
+      message: JSON.stringify({
+        text: message.message.text,
+        files: dummyFiles,
+      }),
+    };
+
     const responseMessageModel: ChatMessageModel = {
       messageId: Date.now().toString(),
       userType: ChatUserTypeEnum.AI,

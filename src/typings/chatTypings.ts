@@ -2,10 +2,19 @@ import { ChatUserTypeEnum, UserRoleEnum } from "./enums";
 import { HTTPStatusBody } from "../typings";
 
 // Models
-export interface ChatMessageModel {
+interface BaseMessageModel {
   messageId: string;
   userType: ChatUserTypeEnum;
+}
+export interface ChatMessageModel extends BaseMessageModel {
   message: string;
+}
+
+export interface UserChatMessageModel extends BaseMessageModel {
+  message: {
+    text: string;
+    files: (File | Blob)[];
+  };
 }
 
 export interface ChatListModel {
