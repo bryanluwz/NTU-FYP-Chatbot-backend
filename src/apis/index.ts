@@ -11,13 +11,25 @@ import path from "path";
 export const postQueryMessageApi = async (
   data: PostQueryMessageApiRequestModel
 ) => {
+  const formData = new FormData();
+
+  formData.append(
+    "messageInfo",
+    JSON.stringify({
+      chatHistory: data.chatHistory,
+      personaId: data.personaId,
+      messageText: data.message.text,
+    })
+  );
+
+  data.message.files.forEach((file) => {
+    formData.append("files", file instanceof Blob ? file : new Blob([file]));
+  });
+
   return (
     await fetch(postQueryMessageUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
+      body: formData,
     })
   ).json() as unknown as PostQueryMessageApiResponseModel;
 };

@@ -13,7 +13,7 @@ export interface ChatMessageModel extends BaseMessageModel {
 export interface UserChatMessageModel extends BaseMessageModel {
   message: {
     text: string;
-    files: (File | Blob)[];
+    files: File[] | any[];
   };
 }
 

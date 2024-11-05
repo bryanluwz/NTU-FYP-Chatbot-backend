@@ -17,6 +17,7 @@ import { Persona } from "../models/Persona";
 import { PersonaModel } from "../typings/dashboardTypings";
 import { postQueryMessageApi, transferDocumentSrcApi } from "../apis";
 import path from "path";
+import multer from "multer";
 
 const databaseDocumentsStoragePath = path.resolve(
   process.cwd(),
@@ -239,9 +240,21 @@ const getChatInfo = async (
 };
 
 // Respond to user message
+const upload = multer({
+  limits: { fileSize: 128 * 1024 * 1024 }, // Limit file size to 128MB
+});
+
+export const uploadQueryFilesMiddleware = upload.array("files");
+
 export const postQueryMessage = async (req: Request, res: Response) => {
-  const chatId = req.body.chatId;
   const userId = req.userId;
+
+  const messageInfo = JSON.parse(req.body.messageInfo) as {
+    chatId: string;
+    message: string;
+  };
+
+  const chatId = messageInfo.chatId;
 
   try {
     const chat = (await Chat.findByPk(chatId)) as ChatInfoModel;
@@ -255,7 +268,24 @@ export const postQueryMessage = async (req: Request, res: Response) => {
 
     const chatHistory = chat.messages;
 
-    const message = req.body.message as UserChatMessageModel;
+    const messageUnformatted = JSON.parse(
+      messageInfo.message
+    ) as ChatMessageModel;
+    const files = (req.files as Express.Multer.File[]) ?? [];
+    console.log(files);
+
+    const message: UserChatMessageModel = {
+      messageId: messageUnformatted.messageId,
+      userType: messageUnformatted.userType,
+      message: {
+        text: messageUnformatted.message,
+        files: files.map((file: Express.Multer.File) => ({
+          buffer: file.buffer,
+          originalname: file.originalname || "dummy.txt",
+          mimetype: file.mimetype,
+        })),
+      },
+    };
 
     let responseMessageResponse = await postQueryMessageApi({
       personaId: chat.personaId,
@@ -315,12 +345,12 @@ export const postQueryMessage = async (req: Request, res: Response) => {
     const responseMessage = responseMessageResponse.data.response;
 
     // Convert the files and images in message.message in dummy files
-    const dummyFiles = message.message.files.forEach((file) => {
-      if (file instanceof File) {
-        return new File([], "dummy.txt");
-      } else if (file instanceof Blob) {
-        return new File([], "image.png");
-      }
+    const dummyFiles = message.message.files.map((file) => {
+      return {
+        buffer: Buffer.alloc(0), // Empty buffer for dummy content
+        name: file.originalname || "dummy.txt",
+        mimetype: file.mimetype || "application/octet-stream",
+      };
     });
 
     const messageModel: ChatMessageModel = {

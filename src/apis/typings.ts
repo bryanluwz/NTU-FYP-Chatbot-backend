@@ -3,12 +3,10 @@ import { ChatMessageModel, UserChatMessageModel } from "../typings/chatTypings";
 export interface PostQueryMessageApiRequestModel {
   personaId: string;
   chatHistory: (UserChatMessageModel | ChatMessageModel)[];
-  message:
-    | string
-    | {
-        text: string;
-        files: (File | Blob)[];
-      };
+  message: {
+    text: string;
+    files: (File | Blob)[];
+  };
 }
 
 export interface PostQueryMessageApiResponseModel {
