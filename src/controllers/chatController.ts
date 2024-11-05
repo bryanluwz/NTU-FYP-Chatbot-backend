@@ -272,7 +272,6 @@ export const postQueryMessage = async (req: Request, res: Response) => {
       messageInfo.message
     ) as ChatMessageModel;
     const files = (req.files as Express.Multer.File[]) ?? [];
-    console.log(files);
 
     const message: UserChatMessageModel = {
       messageId: messageUnformatted.messageId,
