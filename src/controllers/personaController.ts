@@ -11,6 +11,7 @@ import fs from "fs";
 
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
+import { transferDocumentSrcApi } from "../apis";
 
 // Define the absolute path for the uploads directory
 const uploadDirectory = path.resolve(
@@ -271,6 +272,12 @@ export const updatePersona = async (
       if (fs.existsSync(documentFile.path)) {
         fs.unlinkSync(documentFile.path);
       }
+
+      // Call the API to update the documentSrc
+      const _response = await transferDocumentSrcApi({
+        personaId: personaId,
+        documentSrcPath: documentSrcPath,
+      });
     }
 
     // Update the persona's name and description if provided
