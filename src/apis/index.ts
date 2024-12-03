@@ -22,8 +22,15 @@ export const postQueryMessageApi = async (
     })
   );
 
-  data.message.files.forEach((file) => {
-    formData.append("files", file instanceof Blob ? file : new Blob([file]));
+  const filePromises = data.message.files.map(async (filePath) => {
+    const fileStream = await fs.promises.readFile(filePath);
+    return new Blob([fileStream]);
+  });
+
+  const files = await Promise.all(filePromises);
+
+  files.forEach((file) => {
+    formData.append("files", file);
   });
 
   return (
