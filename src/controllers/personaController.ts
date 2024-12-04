@@ -16,7 +16,7 @@ import { transferDocumentSrcApi } from "../apis";
 // Define the absolute path for the uploads directory
 const uploadDirectory = path.resolve(
   process.cwd(),
-  process.env.UPLOAD_STORAGE || "uploads"
+  process.env.UPLOADS_STORAGE || "uploads"
 );
 
 // Ensure the uploads directory exists

@@ -5,7 +5,7 @@ export interface PostQueryMessageApiRequestModel {
   chatHistory: (UserChatMessageModel | ChatMessageModel)[];
   message: {
     text: string;
-    files: (File | Blob)[];
+    files: string[];
   };
 }
 

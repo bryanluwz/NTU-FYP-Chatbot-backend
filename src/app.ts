@@ -4,8 +4,10 @@ import cors from "cors";
 import DashboardRouter from "./routes/dashboardRoutes";
 import AuthRouter from "./routes/authRoutes";
 import UserRouter from "./routes/userRoute";
-import path from "path";
 import PersonaRouter from "./routes/personaRoutes";
+import path from "path";
+import fs from "fs";
+import mime from "mime-types";
 
 require("dotenv").config();
 
@@ -21,6 +23,39 @@ app.use(
     path.resolve(process.cwd(), process.env.AVATARS_STORAGE || "/avatars")
   )
 );
+
+app.use("/uploads", (req, res, next) => {
+  const uploadDirectory = path.resolve(
+    process.cwd(),
+    process.env.UPLOADS_STORAGE || "uploads"
+  );
+
+  const decodedPath = decodeURIComponent(req.path);
+  const filePath = path.join(uploadDirectory, decodedPath);
+
+  fs.stat(filePath, (err, stats) => {
+    if (err || !stats.isFile()) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    const mimeType = mime.lookup(filePath);
+
+    if (mimeType && mimeType.startsWith("image/")) {
+      // Serve the image file
+      return express.static(uploadDirectory)(req, res, next);
+    } else {
+      // Return a dummy file object with only the file name
+      const fileName = path.basename(filePath);
+      const dummyFile = Buffer.from(""); // Empty buffer for dummy content
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+      res.setHeader("Content-Type", "application/octet-stream");
+      return res.send(dummyFile);
+    }
+  });
+});
 
 // Middleware to parse JSON
 app.use(express.json());

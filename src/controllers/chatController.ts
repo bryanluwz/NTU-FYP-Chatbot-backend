@@ -16,13 +16,24 @@ import { Chat } from "../models/Chat";
 import { Persona } from "../models/Persona";
 import { PersonaModel } from "../typings/dashboardTypings";
 import { postQueryMessageApi, transferDocumentSrcApi } from "../apis";
+import mime from "mime-types";
 import path from "path";
+import fs from "fs";
 import multer from "multer";
 
 const databaseDocumentsStoragePath = path.resolve(
   process.cwd(),
   process.env.DOCUMENTS_STORAGE || "documents"
 );
+const databaseUploadsStoragePath = path.resolve(
+  process.cwd(),
+  process.env.UPLOADS_STORAGE || "uploads"
+);
+
+// Ensure the uploads directory exists
+if (!fs.existsSync(databaseUploadsStoragePath)) {
+  fs.mkdirSync(databaseUploadsStoragePath, { recursive: true });
+}
 
 // Example of getting users
 export const getChatList = async (
@@ -184,6 +195,35 @@ const deleteChat = async (
   const chatId = req.body.chatId as string;
 
   try {
+    // Loop through all the messages and delete the files associated
+    const chat = (await Chat.findByPk(chatId)) as ChatInfoModel;
+
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found" });
+    }
+
+    const messages = chat.messages;
+    for (const message of messages) {
+      try {
+        const parsedMessage = JSON.parse(message.message);
+
+        if ("text" in parsedMessage && "files" in parsedMessage) {
+          const msg = parsedMessage as unknown as {
+            text: string;
+            files: { url: string; type: string; name?: string }[];
+          };
+
+          if (msg.files) {
+            for (const file of msg.files) {
+              fs.unlinkSync(file.url);
+            }
+          }
+        }
+      } catch {
+        // Do nothing
+      }
+    }
+
     const deleted = await Chat.destroy({
       where: { chatId },
     });
@@ -216,6 +256,40 @@ const getChatInfo = async (
       return res.status(404).json({ error: "Chat not found" });
     }
 
+    const chatMessages = chat.messages.map((message) => {
+      try {
+        const parsedMessage = JSON.parse(message.message);
+
+        if ("text" in parsedMessage && "files" in parsedMessage) {
+          const msg = parsedMessage as unknown as {
+            text: string;
+            files: { url: string; type: string; name?: string }[];
+          };
+
+          if (msg.files) {
+            msg.files = parsedMessage.files.map(
+              (file: { name: any; url: string }) => {
+                const fileNameParts = (file.name ?? "").split("-");
+                file.url = file.name;
+                file.name = fileNameParts.slice(1).join("-");
+                return file;
+              }
+            );
+          }
+
+          return {
+            messageId: message.messageId,
+            userType: message.userType,
+            message: JSON.stringify(msg),
+          } as ChatMessageModel;
+        } else {
+          return message as ChatMessageModel;
+        }
+      } catch {
+        return message as ChatMessageModel;
+      }
+    });
+
     return res.json({
       status: {
         code: 200,
@@ -225,7 +299,7 @@ const getChatInfo = async (
         chatInfo: {
           chatId: chat.chatId,
           chatName: chat.chatName,
-          messages: chat.messages,
+          messages: chatMessages,
           userId: chat.userId,
           personaId: chat.personaId,
           createdAt: chat.createdAt,
@@ -271,24 +345,42 @@ export const postQueryMessage = async (req: Request, res: Response) => {
     const messageUnformatted = JSON.parse(
       messageInfo.message
     ) as ChatMessageModel;
+
     const files = (req.files as Express.Multer.File[]) ?? [];
+
+    // Store files in databaseUploadsStoragePath
+    const filePaths: { url: string; type: string; name?: string }[] = [];
+
+    for (const file of files) {
+      const fileExt = file.originalname.split(".").pop();
+      const uuidFilename =
+        `${uuidv4().replace(/-/g, "")}-${file.originalname}` ||
+        `no_name.${fileExt}`;
+      const filePath = path.resolve(databaseUploadsStoragePath, uuidFilename);
+
+      fs.writeFileSync(filePath, file.buffer);
+      filePaths.push({
+        url: filePath,
+        type: mime.lookup(file.originalname) || file.mimetype,
+        name: path.join("uploads", uuidFilename),
+      });
+    }
 
     const message: UserChatMessageModel = {
       messageId: messageUnformatted.messageId,
       userType: messageUnformatted.userType,
       message: {
         text: messageUnformatted.message,
-        files: files.map((file: Express.Multer.File) => ({
-          buffer: file.buffer,
-          originalname: file.originalname || "dummy.txt",
-          mimetype: file.mimetype,
-        })),
+        files: filePaths,
       },
     };
 
     let responseMessageResponse = await postQueryMessageApi({
       personaId: chat.personaId,
-      message: message.message,
+      message: {
+        text: message.message.text,
+        files: filePaths.map((file) => file.url),
+      },
       chatHistory: chatHistory,
     });
 
@@ -323,7 +415,10 @@ export const postQueryMessage = async (req: Request, res: Response) => {
 
         responseMessageResponse = await postQueryMessageApi({
           personaId: chat.personaId,
-          message: message.message,
+          message: {
+            text: message.message.text,
+            files: filePaths.map((file) => file.url),
+          },
           chatHistory: chatHistory,
         });
       } catch (err: any) {
@@ -343,21 +438,13 @@ export const postQueryMessage = async (req: Request, res: Response) => {
 
     const responseMessage = responseMessageResponse.data.response;
 
-    // Convert the files and images in message.message in dummy files
-    const dummyFiles = message.message.files.map((file) => {
-      return {
-        buffer: Buffer.alloc(0), // Empty buffer for dummy content
-        name: file.originalname || "dummy.txt",
-        mimetype: file.mimetype || "application/octet-stream",
-      };
-    });
-
+    // Store both user and AI message in database
     const messageModel: ChatMessageModel = {
       messageId: message.messageId,
       userType: message.userType,
       message: JSON.stringify({
         text: message.message.text,
-        files: dummyFiles,
+        files: filePaths,
       }),
     };
 
