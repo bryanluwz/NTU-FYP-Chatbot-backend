@@ -195,6 +195,35 @@ const deleteChat = async (
   const chatId = req.body.chatId as string;
 
   try {
+    // Loop through all the messages and delete the files associated
+    const chat = (await Chat.findByPk(chatId)) as ChatInfoModel;
+
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found" });
+    }
+
+    const messages = chat.messages;
+    for (const message of messages) {
+      try {
+        const parsedMessage = JSON.parse(message.message);
+
+        if ("text" in parsedMessage && "files" in parsedMessage) {
+          const msg = parsedMessage as unknown as {
+            text: string;
+            files: { url: string; type: string; name?: string }[];
+          };
+
+          if (msg.files) {
+            for (const file of msg.files) {
+              fs.unlinkSync(file.url);
+            }
+          }
+        }
+      } catch {
+        // Do nothing
+      }
+    }
+
     const deleted = await Chat.destroy({
       where: { chatId },
     });

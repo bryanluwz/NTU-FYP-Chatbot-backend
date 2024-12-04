@@ -30,7 +30,8 @@ app.use("/uploads", (req, res, next) => {
     process.env.UPLOADS_STORAGE || "uploads"
   );
 
-  const filePath = path.join(uploadDirectory, req.path);
+  const decodedPath = decodeURIComponent(req.path);
+  const filePath = path.join(uploadDirectory, decodedPath);
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
