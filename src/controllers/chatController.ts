@@ -16,6 +16,7 @@ import { Chat } from "../models/Chat";
 import { Persona } from "../models/Persona";
 import { PersonaModel } from "../typings/dashboardTypings";
 import { postQueryMessageApi, transferDocumentSrcApi } from "../apis";
+import mime from "mime-types";
 import path from "path";
 import fs from "fs";
 import multer from "multer";
@@ -247,8 +248,6 @@ const getChatInfo = async (
             );
           }
 
-          console.log(JSON.stringify(msg));
-
           return {
             messageId: message.messageId,
             userType: message.userType,
@@ -323,7 +322,7 @@ export const postQueryMessage = async (req: Request, res: Response) => {
     // Store files in databaseUploadsStoragePath
     const filePaths: { url: string; type: string; name?: string }[] = [];
 
-    files.forEach((file: Express.Multer.File) => {
+    for (const file of files) {
       const fileExt = file.originalname.split(".").pop();
       const uuidFilename =
         `${uuidv4().replace(/-/g, "")}-${file.originalname}` ||
@@ -333,10 +332,10 @@ export const postQueryMessage = async (req: Request, res: Response) => {
       fs.writeFileSync(filePath, file.buffer);
       filePaths.push({
         url: filePath,
-        type: file.mimetype,
+        type: mime.lookup(file.originalname) || file.mimetype,
         name: path.join("uploads", uuidFilename),
       });
-    });
+    }
 
     const message: UserChatMessageModel = {
       messageId: messageUnformatted.messageId,

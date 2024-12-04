@@ -31,7 +31,6 @@ app.use("/uploads", (req, res, next) => {
   );
 
   const filePath = path.join(uploadDirectory, req.path);
-  console.log(req.path, filePath);
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
