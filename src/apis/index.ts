@@ -24,13 +24,17 @@ export const postQueryMessageApi = async (
 
   const filePromises = data.message.files.map(async (filePath) => {
     const fileStream = await fs.promises.readFile(filePath);
-    return new Blob([fileStream]);
+    const fileBlob = new Blob([fileStream]);
+    return {
+      stream: fileBlob,
+      name: path.basename(filePath),
+    };
   });
 
   const files = await Promise.all(filePromises);
 
   files.forEach((file) => {
-    formData.append("files", file);
+    formData.append("files", file.stream, file.name);
   });
 
   return (
