@@ -398,7 +398,20 @@ export const postQueryMessage = async (req: Request, res: Response) => {
 
         const documentSrcPath = persona.documentSrc;
         if (!documentSrcPath) {
-          return res.status(404).json({ error: "Document source not found" });
+          // return res.status(404).json({ error: "Document source not found" });
+          return res.json({
+            status: {
+              code: 200,
+              message: "OK",
+            },
+            data: {
+              message: {
+                messageId: Date.now().toString(),
+                userType: ChatUserTypeEnum.AI,
+                message: "A vital error has occured, please contact admin. °^°",
+              },
+            },
+          });
         }
 
         const documentAbsPath = path.resolve(
@@ -423,16 +436,19 @@ export const postQueryMessage = async (req: Request, res: Response) => {
         });
       } catch (err: any) {
         console.error(err.message);
-        return {
+        return res.json({
           status: {
             code: 200,
             message: "OK",
           },
           data: {
-            message:
-              "An error occured when transfering document source, please contact admin :0",
+            message: {
+              messageId: Date.now().toString(),
+              userType: ChatUserTypeEnum.AI,
+              message: "A vital error has occured, please contact admin. °^°",
+            },
           },
-        };
+        });
       }
     }
 
