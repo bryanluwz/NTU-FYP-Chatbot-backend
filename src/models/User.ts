@@ -43,6 +43,11 @@ const User = sequelize.define(
       allowNull: true,
       defaultValue: "",
     },
+    settings: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: {},
+    },
   },
   {
     timestamps: true,

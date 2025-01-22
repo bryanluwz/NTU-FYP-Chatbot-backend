@@ -43,6 +43,11 @@ export interface UserInfoModel {
   email: string;
   avatar: string;
   role: UserRoleEnum;
+  settings?: any;
+}
+
+export interface UserSettingsModel {
+  ttsName?: string;
 }
 
 export interface StoredUserInfoModel extends UserInfoModel {
@@ -90,5 +95,12 @@ export interface GetUserInfoResponseModel {
   status: HTTPStatusBody;
   data: {
     userInfo: UserInfoModel;
+  };
+}
+
+export interface GetUserSettingsResponseModel {
+  status: HTTPStatusBody;
+  data: {
+    settings: UserSettingsModel;
   };
 }

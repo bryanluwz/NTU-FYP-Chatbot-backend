@@ -7,6 +7,7 @@ import { HTTPResponseEmptyWrapper, HTTPResponseErrorWrapper } from "../typings";
 import { User } from "../models";
 import {
   GetUserInfoResponseModel,
+  GetUserSettingsResponseModel,
   UserInfoModel,
 } from "../typings/chatTypings";
 import { UserRoleEnum } from "../typings/enums";
@@ -208,6 +209,74 @@ export const getUserInfo = async (
   } catch (err: any) {
     console.error(err.message);
     return res.status(500).json({ error: "Failed to retrieve user info" });
+  }
+};
+
+export const updateUserSettingsConfig = async (
+  req: Request,
+  res: Response<GetUserSettingsResponseModel | HTTPResponseErrorWrapper>
+) => {
+  const action = req.body.action as string;
+  switch (action) {
+    case "get":
+      return getUserSettings(req, res);
+    case "update":
+      return updateUserSettings(req, res);
+    default:
+      return res.status(400).json({ error: "Invalid action" });
+  }
+};
+
+const getUserSettings = async (req: Request, res: Response) => {
+  const userId = req.userId;
+
+  try {
+    const user = (await User.findByPk(userId)) as UserInfoModel;
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        settings: user.settings ?? {},
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to retrieve user settings" });
+  }
+};
+
+const updateUserSettings = async (req: Request, res: Response) => {
+  const userId = req.userId;
+  const user = (await User.findByPk(userId)) as UserInfoModel;
+
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+
+  const originalSettings = user.settings;
+  const settings = req.body.userSettings;
+
+  try {
+    const updatedSettings = { ...originalSettings, ...settings };
+    await User.update({ settings: updatedSettings }, { where: { id: userId } });
+
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {},
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to update user settings" });
   }
 };
 
