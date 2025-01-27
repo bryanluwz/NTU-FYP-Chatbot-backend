@@ -507,26 +507,21 @@ const ttsFileStoragePath = path.resolve(
 );
 
 export const postQueryMessageTTS = async (req: Request, res: Response) => {
-  const userId = req.userId;
-
   try {
-    // Get ttsName from user + messageId from req
-    const user = (await User.findByPk(userId)) as UserInfoModel;
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    let { ttsName } = user.settings;
+    // Get ttsName from user + chatId + messageId from request
+    let { ttsName, chatId, messageId } = req.body;
 
     if (!ttsName) {
       ttsName = "default";
     }
 
-    const { chatId, messageId } = req.body as {
-      chatId: string;
-      messageId: string;
-    };
+    if (!chatId) {
+      return res.status(400).json({ error: "Chat ID invalid" });
+    }
+
+    if (!messageId) {
+      return res.status(400).json({ error: "Message ID invalid" });
+    }
 
     // See if tts file exists already
     const existingTtsFilePath = path.resolve(
@@ -548,6 +543,11 @@ export const postQueryMessageTTS = async (req: Request, res: Response) => {
 
     // Get message from chat
     const chat = (await Chat.findByPk(chatId)) as ChatInfoModel;
+
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found" });
+    }
+
     const message = chat.messages.find(
       (msg) => msg.messageId === messageId
     ) as ChatMessageModel;
@@ -556,7 +556,15 @@ export const postQueryMessageTTS = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Message not found" });
     }
 
-    const messageText = JSON.parse(message.message).text;
+    let messageText = "";
+
+    try {
+      messageText = JSON.parse(message.message).text;
+    } catch (err) {
+      messageText = message.message;
+    }
+
+    console.log(messageText);
 
     // Call TTS API
     const response = await postQueryMessageTTSApi({
