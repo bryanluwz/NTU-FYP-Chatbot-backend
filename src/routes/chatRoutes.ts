@@ -2,6 +2,7 @@ import express from "express";
 import {
   getChatList,
   postQueryMessage,
+  postQueryMessageTTS,
   updateChatInfo,
   uploadQueryFilesMiddleware,
 } from "../controllers/chatController";
@@ -18,5 +19,6 @@ ChatRouter.post(
   uploadQueryFilesMiddleware,
   postQueryMessage
 );
+ChatRouter.post("/chat/message/tts", authenticateToken, postQueryMessageTTS);
 
 export default ChatRouter;

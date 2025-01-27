@@ -7,6 +7,7 @@ import {
   GetChatListResponseModel,
   GetMinimumChatInfoResponseModel,
   UserChatMessageModel,
+  UserInfoModel,
 } from "../typings/chatTypings";
 
 import { HTTPResponseEmptyWrapper, HTTPResponseErrorWrapper } from "../typings";
@@ -15,11 +16,16 @@ import { v4 as uuidv4 } from "uuid";
 import { Chat } from "../models/Chat";
 import { Persona } from "../models/Persona";
 import { PersonaModel } from "../typings/dashboardTypings";
-import { postQueryMessageApi, transferDocumentSrcApi } from "../apis";
+import {
+  postQueryMessageApi,
+  postQueryMessageTTSApi,
+  transferDocumentSrcApi,
+} from "../apis";
 import mime from "mime-types";
 import path from "path";
 import fs from "fs";
 import multer from "multer";
+import { User } from "../models";
 
 const databaseDocumentsStoragePath = path.resolve(
   process.cwd(),
@@ -491,5 +497,93 @@ export const postQueryMessage = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error(err.message);
     return res.status(500).json({ error: "Failed to update chat info" });
+  }
+};
+
+// Respond to TTS request, i.e. convert text to speech
+const ttsFileStoragePath = path.resolve(
+  process.cwd(),
+  process.env.TTS_STORAGE || "tts"
+);
+
+export const postQueryMessageTTS = async (req: Request, res: Response) => {
+  const userId = req.userId;
+
+  try {
+    // Get ttsName from user + messageId from req
+    const user = (await User.findByPk(userId)) as UserInfoModel;
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    let { ttsName } = user.settings;
+
+    if (!ttsName) {
+      ttsName = "default";
+    }
+
+    const { chatId, messageId } = req.body as {
+      chatId: string;
+      messageId: string;
+    };
+
+    // See if tts file exists already
+    const existingTtsFilePath = path.resolve(
+      ttsFileStoragePath,
+      `${messageId}-${ttsName}.mp3`
+    );
+
+    if (fs.existsSync(existingTtsFilePath)) {
+      return res.json({
+        status: {
+          code: 200,
+          message: "OK",
+        },
+        data: {
+          response: existingTtsFilePath,
+        },
+      });
+    }
+
+    // Get message from chat
+    const chat = (await Chat.findByPk(chatId)) as ChatInfoModel;
+    const message = chat.messages.find(
+      (msg) => msg.messageId === messageId
+    ) as ChatMessageModel;
+
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    const messageText = JSON.parse(message.message).text;
+
+    // Call TTS API
+    const response = await postQueryMessageTTSApi({
+      ttsName: ttsName,
+      text: messageText,
+    });
+
+    // Store the TTS file
+    const ttsFilePath = path.resolve(
+      ttsFileStoragePath,
+      `${messageId}-${ttsName}.mp3`
+    );
+    const arrayBuffer = await response.data.response.arrayBuffer();
+    fs.writeFileSync(ttsFilePath, Buffer.from(arrayBuffer));
+
+    // Return the TTS file
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        response: ttsFilePath,
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to get TTS function" });
   }
 };

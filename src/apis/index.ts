@@ -3,6 +3,8 @@ import {
   TransferDocumentSrcApiResponseModel,
   PostQueryMessageApiRequestModel,
   PostQueryMessageApiResponseModel,
+  PostQueryMessageTTSApiRequestModel,
+  PostQueryMessageTTSApiResponseModel,
 } from "./typings";
 import { changeDocumentSrcUrl, postQueryMessageUrl } from "./urls";
 import fs from "fs";
@@ -65,4 +67,21 @@ export const transferDocumentSrcApi = async (
       body: formData,
     })
   ).json() as unknown as TransferDocumentSrcApiResponseModel;
+};
+
+export const postQueryMessageTTSApi = async (
+  data: PostQueryMessageTTSApiRequestModel
+) => {
+  const formData = new FormData();
+
+  formData.append("ttsName", data.ttsName);
+
+  formData.append("text", data.text);
+
+  return (
+    await fetch(postQueryMessageUrl, {
+      method: "POST",
+      body: formData,
+    })
+  ).json() as unknown as PostQueryMessageTTSApiResponseModel;
 };
