@@ -586,16 +586,6 @@ export const postQueryMessageTTS = async (req: Request, res: Response) => {
       throw new Error("Failed to get TTS function");
     }
 
-    // console.log(response);
-
-    // // Store the TTS file
-    // const ttsFilePath = path.resolve(
-    //   ttsFileStoragePath,
-    //   `${messageId}-${ttsName}.mp3`
-    // );
-    // const arrayBuffer = await response.data.response.arrayBuffer();
-    // fs.writeFileSync(ttsFilePath, Buffer.from(arrayBuffer));
-
     // Return the TTS file
     return res.json({
       status: {
