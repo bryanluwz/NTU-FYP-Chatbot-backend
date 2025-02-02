@@ -37,6 +37,7 @@ export interface TransferDocumentSrcApiResponseModel {
 export interface PostQueryMessageTTSApiRequestModel {
   ttsName: string;
   text: string;
+  responseFileDownloadPath?: string;
 }
 
 export interface PostQueryMessageTTSApiResponseModel {

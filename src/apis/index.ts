@@ -6,7 +6,11 @@ import {
   PostQueryMessageTTSApiRequestModel,
   PostQueryMessageTTSApiResponseModel,
 } from "./typings";
-import { changeDocumentSrcUrl, postQueryMessageUrl } from "./urls";
+import {
+  changeDocumentSrcUrl,
+  postQueryMessageTTSUrl,
+  postQueryMessageUrl,
+} from "./urls";
 import fs from "fs";
 import path from "path";
 
@@ -78,10 +82,26 @@ export const postQueryMessageTTSApi = async (
 
   formData.append("text", data.text);
 
-  return (
-    await fetch(postQueryMessageUrl, {
-      method: "POST",
-      body: formData,
-    })
-  ).json() as unknown as PostQueryMessageTTSApiResponseModel;
+  const response = await fetch(postQueryMessageTTSUrl, {
+    method: "POST",
+    body: formData,
+  });
+
+  // Check if the response is a file
+  const contentType = response.headers.get("Content-Type");
+  if (contentType && contentType.startsWith("audio/")) {
+    // Get the file buffer
+    const buffer = Buffer.from(await response.arrayBuffer());
+
+    // Save the file locally
+    const filePath =
+      data.responseFileDownloadPath ?? path.join(__dirname, "output.mp3"); // Adjust the filename and path as needed
+    fs.writeFileSync(filePath, buffer);
+
+    return filePath; // Optionally return the file path
+  }
+
+  // Handle non-file responses
+  const jsonData = await response.json();
+  return jsonData as unknown as PostQueryMessageTTSApiResponseModel;
 };

@@ -26,6 +26,7 @@ import path from "path";
 import fs from "fs";
 import multer from "multer";
 import { User } from "../models";
+import { PostQueryMessageTTSApiResponseModel } from "../apis/typings";
 
 const databaseDocumentsStoragePath = path.resolve(
   process.cwd(),
@@ -564,21 +565,36 @@ export const postQueryMessageTTS = async (req: Request, res: Response) => {
       messageText = message.message;
     }
 
-    console.log(messageText);
-
     // Call TTS API
-    const response = await postQueryMessageTTSApi({
-      ttsName: ttsName,
-      text: messageText,
-    });
-
-    // Store the TTS file
     const ttsFilePath = path.resolve(
       ttsFileStoragePath,
       `${messageId}-${ttsName}.mp3`
     );
-    const arrayBuffer = await response.data.response.arrayBuffer();
-    fs.writeFileSync(ttsFilePath, Buffer.from(arrayBuffer));
+
+    const response = await postQueryMessageTTSApi({
+      ttsName: ttsName,
+      text: messageText,
+      responseFileDownloadPath: ttsFilePath,
+    });
+
+    if (typeof response === "string" && response === ttsFilePath) {
+      // Good to go
+    } else if (
+      (response as unknown as PostQueryMessageTTSApiResponseModel)?.status
+        ?.code === 200
+    ) {
+      throw new Error("Failed to get TTS function");
+    }
+
+    // console.log(response);
+
+    // // Store the TTS file
+    // const ttsFilePath = path.resolve(
+    //   ttsFileStoragePath,
+    //   `${messageId}-${ttsName}.mp3`
+    // );
+    // const arrayBuffer = await response.data.response.arrayBuffer();
+    // fs.writeFileSync(ttsFilePath, Buffer.from(arrayBuffer));
 
     // Return the TTS file
     return res.json({
