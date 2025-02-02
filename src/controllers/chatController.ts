@@ -537,7 +537,7 @@ export const postQueryMessageTTS = async (req: Request, res: Response) => {
           message: "OK",
         },
         data: {
-          response: existingTtsFilePath,
+          ttsFile: "tts/" + `${messageId}-${ttsName}.mp3`,
         },
       });
     }
@@ -603,7 +603,7 @@ export const postQueryMessageTTS = async (req: Request, res: Response) => {
         message: "OK",
       },
       data: {
-        response: "tts/" + `${messageId}-${ttsName}.mp3`,
+        ttsFile: "tts/" + `${messageId}-${ttsName}.mp3`,
       },
     });
   } catch (err: any) {
