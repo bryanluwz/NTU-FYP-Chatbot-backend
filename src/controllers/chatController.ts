@@ -603,7 +603,7 @@ export const postQueryMessageTTS = async (req: Request, res: Response) => {
         message: "OK",
       },
       data: {
-        response: ttsFilePath,
+        response: "tts/" + `${messageId}-${ttsName}.mp3`,
       },
     });
   } catch (err: any) {

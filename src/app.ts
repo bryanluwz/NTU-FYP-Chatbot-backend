@@ -24,6 +24,11 @@ app.use(
   )
 );
 
+app.use(
+  "/tts",
+  express.static(path.resolve(process.cwd(), process.env.TTS_STORAGE || "/tts"))
+);
+
 app.use("/uploads", (req, res, next) => {
   const uploadDirectory = path.resolve(
     process.cwd(),
