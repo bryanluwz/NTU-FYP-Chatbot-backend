@@ -49,3 +49,17 @@ export interface PostQueryMessageTTSApiResponseModel {
     response: File;
   };
 }
+
+export interface PostSTTAudioApiRequestModel {
+  audioBlob: Blob;
+}
+
+export interface PostSTTAudioApiResponseModel {
+  status: {
+    code: number;
+    message: string;
+  };
+  data: {
+    response: string;
+  };
+}

@@ -19,6 +19,7 @@ import { PersonaModel } from "../typings/dashboardTypings";
 import {
   postQueryMessageApi,
   postQueryMessageTTSApi,
+  postSTTAudioApi,
   transferDocumentSrcApi,
 } from "../apis";
 import mime from "mime-types";
@@ -599,5 +600,32 @@ export const postQueryMessageTTS = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error(err.message);
     return res.status(500).json({ error: "Failed to get TTS function" });
+  }
+};
+
+export const postSTTAudioMulterMiddleware = upload.single("audio");
+
+export const postSTTAudio = async (req: Request, res: Response) => {
+  // Get audio blob from request formdata (audio)
+  const audio = req.file as Express.Multer.File;
+  const audioBlob = audio.buffer;
+
+  // Forward to AI server with API
+  try {
+    const blob = new Blob([audioBlob], { type: audio.mimetype });
+    const response = await postSTTAudioApi({ audioBlob: blob });
+
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        sttText: response.data.response,
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to get STT function" });
   }
 };

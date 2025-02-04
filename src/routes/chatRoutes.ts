@@ -3,6 +3,8 @@ import {
   getChatList,
   postQueryMessage,
   postQueryMessageTTS,
+  postSTTAudio,
+  postSTTAudioMulterMiddleware,
   updateChatInfo,
   uploadQueryFilesMiddleware,
 } from "../controllers/chatController";
@@ -20,5 +22,11 @@ ChatRouter.post(
   postQueryMessage
 );
 ChatRouter.post("/chat/message/tts", authenticateToken, postQueryMessageTTS);
+ChatRouter.post(
+  "/stt/audio",
+  authenticateToken,
+  postSTTAudioMulterMiddleware,
+  postSTTAudio
+); // url a bit out of place haha
 
 export default ChatRouter;

@@ -5,11 +5,14 @@ import {
   PostQueryMessageApiResponseModel,
   PostQueryMessageTTSApiRequestModel,
   PostQueryMessageTTSApiResponseModel,
+  PostSTTAudioApiRequestModel,
+  PostSTTAudioApiResponseModel,
 } from "./typings";
 import {
   changeDocumentSrcUrl,
   postQueryMessageTTSUrl,
   postQueryMessageUrl,
+  postSTTAudioUrl,
 } from "./urls";
 import fs from "fs";
 import path from "path";
@@ -104,4 +107,17 @@ export const postQueryMessageTTSApi = async (
   // Handle non-file responses
   const jsonData = await response.json();
   return jsonData as unknown as PostQueryMessageTTSApiResponseModel;
+};
+
+export const postSTTAudioApi = async (data: PostSTTAudioApiRequestModel) => {
+  const formData = new FormData();
+
+  formData.append("audio", data.audioBlob);
+
+  return (await fetch(postSTTAudioUrl, {
+    method: "POST",
+    body: formData,
+  }).then((response) =>
+    response.json()
+  )) as unknown as PostSTTAudioApiResponseModel;
 };
