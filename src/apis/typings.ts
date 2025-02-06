@@ -33,3 +33,33 @@ export interface TransferDocumentSrcApiResponseModel {
     response: string;
   };
 }
+
+export interface PostQueryMessageTTSApiRequestModel {
+  ttsName: string;
+  text: string;
+  responseFileDownloadPath?: string;
+}
+
+export interface PostQueryMessageTTSApiResponseModel {
+  status: {
+    code: number;
+    message: string;
+  };
+  data: {
+    response: File;
+  };
+}
+
+export interface PostSTTAudioApiRequestModel {
+  audioBlob: Blob;
+}
+
+export interface PostSTTAudioApiResponseModel {
+  status: {
+    code: number;
+    message: string;
+  };
+  data: {
+    response: string;
+  };
+}

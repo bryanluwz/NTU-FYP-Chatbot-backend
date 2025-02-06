@@ -3,8 +3,17 @@ import {
   TransferDocumentSrcApiResponseModel,
   PostQueryMessageApiRequestModel,
   PostQueryMessageApiResponseModel,
+  PostQueryMessageTTSApiRequestModel,
+  PostQueryMessageTTSApiResponseModel,
+  PostSTTAudioApiRequestModel,
+  PostSTTAudioApiResponseModel,
 } from "./typings";
-import { changeDocumentSrcUrl, postQueryMessageUrl } from "./urls";
+import {
+  changeDocumentSrcUrl,
+  postQueryMessageTTSUrl,
+  postQueryMessageUrl,
+  postSTTAudioUrl,
+} from "./urls";
 import fs from "fs";
 import path from "path";
 
@@ -65,4 +74,50 @@ export const transferDocumentSrcApi = async (
       body: formData,
     })
   ).json() as unknown as TransferDocumentSrcApiResponseModel;
+};
+
+export const postQueryMessageTTSApi = async (
+  data: PostQueryMessageTTSApiRequestModel
+) => {
+  const formData = new FormData();
+
+  formData.append("ttsName", data.ttsName);
+
+  formData.append("text", data.text);
+
+  const response = await fetch(postQueryMessageTTSUrl, {
+    method: "POST",
+    body: formData,
+  });
+
+  // Check if the response is a file
+  const contentType = response.headers.get("Content-Type");
+  if (contentType && contentType.startsWith("audio/")) {
+    // Get the file buffer
+    const buffer = Buffer.from(await response.arrayBuffer());
+
+    // Save the file locally
+    const filePath =
+      data.responseFileDownloadPath ?? path.join(__dirname, "output.mp3"); // Adjust the filename and path as needed
+    fs.writeFileSync(filePath, buffer);
+
+    return filePath; // Optionally return the file path
+  }
+
+  // Handle non-file responses
+  const jsonData = await response.json();
+  return jsonData as unknown as PostQueryMessageTTSApiResponseModel;
+};
+
+export const postSTTAudioApi = async (data: PostSTTAudioApiRequestModel) => {
+  const formData = new FormData();
+
+  formData.append("audio", data.audioBlob);
+
+  return (await fetch(postSTTAudioUrl, {
+    method: "POST",
+    body: formData,
+  }).then((response) =>
+    response.json()
+  )) as unknown as PostSTTAudioApiResponseModel;
 };

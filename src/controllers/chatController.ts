@@ -7,6 +7,7 @@ import {
   GetChatListResponseModel,
   GetMinimumChatInfoResponseModel,
   UserChatMessageModel,
+  UserInfoModel,
 } from "../typings/chatTypings";
 
 import { HTTPResponseEmptyWrapper, HTTPResponseErrorWrapper } from "../typings";
@@ -15,11 +16,18 @@ import { v4 as uuidv4 } from "uuid";
 import { Chat } from "../models/Chat";
 import { Persona } from "../models/Persona";
 import { PersonaModel } from "../typings/dashboardTypings";
-import { postQueryMessageApi, transferDocumentSrcApi } from "../apis";
+import {
+  postQueryMessageApi,
+  postQueryMessageTTSApi,
+  postSTTAudioApi,
+  transferDocumentSrcApi,
+} from "../apis";
 import mime from "mime-types";
 import path from "path";
 import fs from "fs";
 import multer from "multer";
+import { User } from "../models";
+import { PostQueryMessageTTSApiResponseModel } from "../apis/typings";
 
 const databaseDocumentsStoragePath = path.resolve(
   process.cwd(),
@@ -491,5 +499,133 @@ export const postQueryMessage = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error(err.message);
     return res.status(500).json({ error: "Failed to update chat info" });
+  }
+};
+
+// Respond to TTS request, i.e. convert text to speech
+const ttsFileStoragePath = path.resolve(
+  process.cwd(),
+  process.env.TTS_STORAGE || "tts"
+);
+
+export const postQueryMessageTTS = async (req: Request, res: Response) => {
+  try {
+    // Get ttsName from user + chatId + messageId from request
+    let { ttsName, chatId, messageId } = req.body;
+
+    if (!ttsName) {
+      ttsName = "default";
+    }
+
+    if (!chatId) {
+      return res.status(400).json({ error: "Chat ID invalid" });
+    }
+
+    if (!messageId) {
+      return res.status(400).json({ error: "Message ID invalid" });
+    }
+
+    // See if tts file exists already
+    const existingTtsFilePath = path.resolve(
+      ttsFileStoragePath,
+      `${messageId}-${ttsName}.mp3`
+    );
+
+    if (fs.existsSync(existingTtsFilePath)) {
+      return res.json({
+        status: {
+          code: 200,
+          message: "OK",
+        },
+        data: {
+          ttsFile: "tts/" + `${messageId}-${ttsName}.mp3`,
+        },
+      });
+    }
+
+    // Get message from chat
+    const chat = (await Chat.findByPk(chatId)) as ChatInfoModel;
+
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found" });
+    }
+
+    const message = chat.messages.find(
+      (msg) => msg.messageId === messageId
+    ) as ChatMessageModel;
+
+    if (!message) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    let messageText = "";
+
+    try {
+      messageText = JSON.parse(message.message).text;
+    } catch (err) {
+      messageText = message.message;
+    }
+
+    // Call TTS API
+    const ttsFilePath = path.resolve(
+      ttsFileStoragePath,
+      `${messageId}-${ttsName}.mp3`
+    );
+
+    const response = await postQueryMessageTTSApi({
+      ttsName: ttsName,
+      text: messageText,
+      responseFileDownloadPath: ttsFilePath,
+    });
+
+    if (typeof response === "string" && response === ttsFilePath) {
+      // Good to go
+    } else if (
+      (response as unknown as PostQueryMessageTTSApiResponseModel)?.status
+        ?.code === 200
+    ) {
+      throw new Error("Failed to get TTS function");
+    }
+
+    // Return the TTS file
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        ttsFile: "tts/" + `${messageId}-${ttsName}.mp3`,
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to get TTS function" });
+  }
+};
+
+export const postSTTAudioMulterMiddleware = upload.single("audio");
+
+export const postSTTAudio = async (req: Request, res: Response) => {
+  // Get audio blob from request formdata (audio)
+  const audio = req.file as Express.Multer.File;
+  const audioBlob = audio.buffer;
+
+  // Forward to AI server with API
+  try {
+    const blob = new Blob([audioBlob], { type: audio.mimetype });
+    const response = await postSTTAudioApi({ audioBlob: blob });
+
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        sttText: response.data.response,
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to get STT function" });
   }
 };
