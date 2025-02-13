@@ -7,9 +7,11 @@ import {
   PostQueryMessageTTSApiResponseModel,
   PostSTTAudioApiRequestModel,
   PostSTTAudioApiResponseModel,
+  PostQueryImageApiRequestModel as PostQueryImageApiRequestModel,
 } from "./typings";
 import {
   changeDocumentSrcUrl,
+  postQueryImageUrl,
   postQueryMessageTTSUrl,
   postQueryMessageUrl,
   postSTTAudioUrl,
@@ -120,4 +122,15 @@ export const postSTTAudioApi = async (data: PostSTTAudioApiRequestModel) => {
   }).then((response) =>
     response.json()
   )) as unknown as PostSTTAudioApiResponseModel;
+};
+
+export const postQueryImage = async (data: PostQueryImageApiRequestModel) => {
+  const response = await fetch(
+    `${postQueryImageUrl}?filename=${data.filename}`
+  );
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+
+  return url;
 };

@@ -16,6 +16,7 @@ export interface PostQueryMessageApiResponseModel {
   };
   data: {
     response: string;
+    image_paths: string[];
   };
 }
 
@@ -62,4 +63,8 @@ export interface PostSTTAudioApiResponseModel {
   data: {
     response: string;
   };
+}
+
+export interface PostQueryImageApiRequestModel {
+  filename: string;
 }

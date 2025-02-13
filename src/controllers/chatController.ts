@@ -461,6 +461,30 @@ export const postQueryMessage = async (req: Request, res: Response) => {
     }
 
     const responseMessage = responseMessageResponse.data.response;
+    const image_paths = responseMessageResponse.data.image_paths;
+    const saved_image_paths = [];
+
+    // Get image and store in UPLOADS folder
+    if (image_paths) {
+      for (const image_path of image_paths) {
+        const imageAbsPath = path.resolve(
+          databaseDocumentsStoragePath,
+          image_path
+        );
+        const imageExt = image_path.split(".").pop();
+        const uuidFilename =
+          `${uuidv4().replace(/-/g, "")}-${image_path}` ||
+          `no_name.${imageExt}`;
+        const filePath = path.resolve(databaseUploadsStoragePath, uuidFilename);
+
+        fs.copyFileSync(imageAbsPath, filePath);
+        saved_image_paths.push({
+          url: filePath,
+          type: mime.lookup(image_path) || "image/jpeg",
+          name: path.join("uploads", uuidFilename),
+        });
+      }
+    }
 
     // Store both user and AI message in database
     const messageModel: ChatMessageModel = {
@@ -475,7 +499,10 @@ export const postQueryMessage = async (req: Request, res: Response) => {
     const responseMessageModel: ChatMessageModel = {
       messageId: Date.now().toString(),
       userType: ChatUserTypeEnum.AI,
-      message: responseMessage,
+      message: JSON.stringify({
+        text: responseMessage,
+        files: saved_image_paths,
+      }),
     };
 
     const messages = chat.messages;
