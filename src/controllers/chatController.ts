@@ -406,7 +406,6 @@ export const postQueryMessage = async (req: Request, res: Response) => {
 
         const documentSrcPath = persona.documentSrc;
         if (!documentSrcPath) {
-          // return res.status(404).json({ error: "Document source not found" });
           return res.json({
             status: {
               code: 200,
@@ -416,7 +415,8 @@ export const postQueryMessage = async (req: Request, res: Response) => {
               message: {
                 messageId: Date.now().toString(),
                 userType: ChatUserTypeEnum.AI,
-                message: "A vital error has occured, please contact admin. °^°",
+                message:
+                  "Ooopsies! A vital error has occured. Please restart the chat another time, or contact the administrator. ",
               },
             },
           });
@@ -453,7 +453,8 @@ export const postQueryMessage = async (req: Request, res: Response) => {
             message: {
               messageId: Date.now().toString(),
               userType: ChatUserTypeEnum.AI,
-              message: "A vital error has occured, please contact admin. °^°",
+              message:
+                "Ooopsies! A vital error has occured. Please restart the chat another time, or contact the administrator. ",
             },
           },
         });
@@ -525,7 +526,20 @@ export const postQueryMessage = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     console.error(err.message);
-    return res.status(500).json({ error: "Failed to update chat info" });
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        message: {
+          messageId: Date.now().toString(),
+          userType: ChatUserTypeEnum.AI,
+          message:
+            "Ooopsies! A vital error has occured. Please restart the chat another time, or contact the administrator. ",
+        },
+      },
+    });
   }
 };
 
