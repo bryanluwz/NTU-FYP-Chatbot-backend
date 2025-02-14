@@ -116,21 +116,26 @@ export const postSTTAudioApi = async (data: PostSTTAudioApiRequestModel) => {
 
   formData.append("audio", data.audioBlob);
 
-  return (await fetch(postSTTAudioUrl, {
-    method: "POST",
-    body: formData,
-  }).then((response) =>
-    response.json()
-  )) as unknown as PostSTTAudioApiResponseModel;
+  return (
+    await fetch(postSTTAudioUrl, {
+      method: "POST",
+      body: formData,
+    })
+  ).json() as unknown as PostSTTAudioApiResponseModel;
 };
 
-export const postQueryImage = async (data: PostQueryImageApiRequestModel) => {
-  const response = await fetch(
-    `${postQueryImageUrl}?filename=${data.filename}`
-  );
+export const postQueryImageApi = async (
+  data: PostQueryImageApiRequestModel
+) => {
+  const formData = new FormData();
 
+  formData.append("filename", data.filename);
+
+  const response = await fetch(postQueryImageUrl, {
+    method: "POST",
+    body: formData,
+  });
   const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
 
-  return url;
+  return blob;
 };

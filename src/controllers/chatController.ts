@@ -17,6 +17,7 @@ import { Chat } from "../models/Chat";
 import { Persona } from "../models/Persona";
 import { PersonaModel } from "../typings/dashboardTypings";
 import {
+  postQueryImageApi,
   postQueryMessageApi,
   postQueryMessageTTSApi,
   postSTTAudioApi,
@@ -427,7 +428,7 @@ export const postQueryMessage = async (req: Request, res: Response) => {
           documentSrcPath
         );
 
-        console.log("Document source path: ", documentAbsPath);
+        // console.log("Document source path: ", documentAbsPath);
 
         const _response = await transferDocumentSrcApi({
           personaId: chat.personaId,
@@ -462,26 +463,25 @@ export const postQueryMessage = async (req: Request, res: Response) => {
     }
 
     const responseMessage = responseMessageResponse.data.response;
-    const image_paths = responseMessageResponse.data.image_paths;
-    const saved_image_paths = [];
+    const imagePaths = responseMessageResponse.data.image_paths;
+    const savedImagePaths = [];
 
     // Get image and store in UPLOADS folder
-    if (image_paths) {
-      for (const image_path of image_paths) {
-        const imageAbsPath = path.resolve(
-          databaseDocumentsStoragePath,
-          image_path
-        );
-        const imageExt = image_path.split(".").pop();
-        const uuidFilename =
-          `${uuidv4().replace(/-/g, "")}-${image_path}` ||
-          `no_name.${imageExt}`;
+    if (imagePaths) {
+      for (const imagePath of imagePaths) {
+        const imageBlob = await postQueryImageApi({
+          filename: imagePath,
+        });
+        const uuidFilename = `${uuidv4()}.${imagePath.split(".").pop()}`;
         const filePath = path.resolve(databaseUploadsStoragePath, uuidFilename);
 
-        fs.copyFileSync(imageAbsPath, filePath);
-        saved_image_paths.push({
-          url: filePath,
-          type: mime.lookup(image_path) || "image/jpeg",
+        const arrayBuffer = await imageBlob.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        fs.writeFileSync(filePath, buffer);
+
+        savedImagePaths.push({
+          url: path.join("uploads", uuidFilename),
+          type: mime.lookup(imagePath) || "image/jpeg",
           name: path.join("uploads", uuidFilename),
         });
       }
@@ -502,7 +502,7 @@ export const postQueryMessage = async (req: Request, res: Response) => {
       userType: ChatUserTypeEnum.AI,
       message: JSON.stringify({
         text: responseMessage,
-        files: saved_image_paths,
+        files: savedImagePaths,
       }),
     };
 
