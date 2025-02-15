@@ -21,7 +21,7 @@ const initializePersonas = async () => {
         personaId: persona.personaId,
         personaName: persona.personaName,
         personaDescription: persona.personaDescription,
-        personaAvatar: persona.personaAvatar || "default_persona.png",
+        personaAvatar: persona.personaAvatar || "avatars/default_persona.png",
         createdAt: new Date(persona.createdAt),
         updatedAt: new Date(persona.updatedAt),
       });

@@ -21,7 +21,7 @@ const Persona = sequelize.define(
     personaAvatar: {
       type: DataTypes.STRING,
       allowNull: true,
-      defaultValue: "default_persona.png", // Default avatar
+      defaultValue: "avatars/default_persona.png", // Default avatar
     },
     userId: {
       type: DataTypes.UUID,
