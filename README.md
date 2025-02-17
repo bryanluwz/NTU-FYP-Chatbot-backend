@@ -40,11 +40,14 @@ Minimally, only the [frontend repository](https://github.com/bryanluwz/NTU-FYP-C
    yarn install
    ```
 
-3. Set the frontend built code path in the `.env` file:
+3. Set the frontend built code path and JWT Secret in the `.env` file:
 
    ```env
    # Default path
    FRONTEND_PATH=../NTU-FYP-Chatbot-frontend/dist
+   ...
+   JWT_SECRET=<your_secret_here>
+   ...
    ```
 
    This path should point to the `dist` folder in the frontend repository. If you have the frontend code in a different location, update the path accordingly.
@@ -57,7 +60,7 @@ Minimally, only the [frontend repository](https://github.com/bryanluwz/NTU-FYP-C
    openssl req -nodes -new -x509 -keyout server.key -out server.cert
    ```
 
-   This command, which might or might not work on Windows, will generate a self-signed SSL certificate and private key. You can also use a valid SSL certificate if you have one.
+   This command, which might or might not work on Windows, will generate a self-signed SSL certificate and private key. You can also use a valid SSL certificate if you have one, or already obtained from the [AI server repository](https://github.com/bryanluwz/NTU-FYP-Chatbot-AI).
 
    Don't know how? Too bad, figure it out yourself!
 

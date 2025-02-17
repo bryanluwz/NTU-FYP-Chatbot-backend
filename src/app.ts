@@ -11,6 +11,28 @@ import mime from "mime-types";
 
 require("dotenv").config();
 
+// Make directories if they don't exist
+const directories = [
+  path.resolve(process.cwd(), process.env.DATABASE_STORAGE || "test.db"),
+  path.resolve(process.cwd(), process.env.AVATARS_STORAGE || "/avatars"),
+  path.resolve(process.cwd(), process.env.DOCUMENTS_STORAGE || "documents"),
+  path.resolve(process.cwd(), process.env.UPLOADS_STORAGE || "/uploads"),
+  path.resolve(process.cwd(), process.env.TTS_STORAGE || "/tts"),
+];
+
+if (directories.every((dir) => fs.existsSync(dir))) {
+  console.log("All storage has already existed.");
+} else {
+  directories.forEach((dir) => {
+    if (dir) {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+        console.log(`Created directory: ${dir}`);
+      }
+    }
+  });
+}
+
 const app = express();
 
 // Enable CORS for all routes
