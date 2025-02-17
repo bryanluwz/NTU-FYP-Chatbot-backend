@@ -49,13 +49,25 @@ Minimally, only the [frontend repository](https://github.com/bryanluwz/NTU-FYP-C
 
    This path should point to the `dist` folder in the frontend repository. If you have the frontend code in a different location, update the path accordingly.
 
-   Don't know how? Too bad, figure it out yourself.
+   Don't know how? Too bad, figure it out yourself!
 
-4. Start the development server:
+4. Create your own `server.key` and `server.cert` files for HTTPS:
+
+   ```bash
+   openssl req -nodes -new -x509 -keyout server.key -out server.cert
+   ```
+
+   This command, which might or might not work on Windows, will generate a self-signed SSL certificate and private key. You can also use a valid SSL certificate if you have one.
+
+   Don't know how? Too bad, figure it out yourself!
+
+5. Start the development server:
 
    ```bash
    yarn start
    ```
+
+   This would create a bunch of JavaScript files everywhere, but you can ignore them, it's just a part of nature.
 
    The backend server should now be running on `https://localhost:3000` or whatever port you specified in the `.env` file.
 
