@@ -27,4 +27,22 @@ const initializeUsers = async () => {
   }
 };
 
+export const initializeAdmin = async () => {
+  try {
+    // This is the default admin user when the database is empty
+    const defaultAdmin = {
+      username: "admin",
+      email: "admin@admin.com",
+      password: "admin",
+      role: UserRoleEnum.Admin,
+    };
+
+    const hashedPassword = await bcrypt.hash(defaultAdmin.password, 10);
+    await User.create({ ...defaultAdmin, password: hashedPassword });
+    console.log("Default admin user inserted successfully.");
+  } catch (error) {
+    console.error("Error inserting default admin user:", error);
+  }
+};
+
 export default initializeUsers;
