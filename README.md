@@ -64,15 +64,25 @@ Minimally, only the [frontend repository](https://github.com/bryanluwz/NTU-FYP-C
 
    Don't know how? Too bad, figure it out yourself!
 
-5. Start the development server:
+5. Start the server:
 
    ```bash
-   yarn start
+   node ./dist/server.js
    ```
 
-   This would create a bunch of JavaScript files everywhere, but you can ignore them, it's just a part of nature.
-
    The backend server should now be running on `https://localhost:3000` or whatever port you specified in the `.env` file.
+
+6. Development:
+
+   After changing the code, you can run
+
+   ```bash
+   yarn build
+   ```
+
+   to compile the TypeScript code into JavaScript.
+
+   This would create a bunch of JavaScript files in the `dist` folder that mirrors the `src` folder structure.
 
 ## License
 

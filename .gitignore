@@ -1,6 +1,5 @@
 node_modules
-database
+/database
 .env
-/src/**/*.js
 server.cert
 server.key

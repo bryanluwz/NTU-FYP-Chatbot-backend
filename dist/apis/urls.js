@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.postQueryImageUrl = exports.postSTTAudioUrl = exports.postQueryMessageTTSUrl = exports.changeDocumentSrcUrl = exports.postQueryMessageUrl = exports.aiServerUrl = void 0;
+const portNumber = process.env.AI_PORT || 3001;
+exports.aiServerUrl = `https://0.0.0.0:${portNumber}`;
+exports.postQueryMessageUrl = `${exports.aiServerUrl}/api/chat/query`;
+exports.changeDocumentSrcUrl = `${exports.aiServerUrl}/api/chat/transferDocumentSrc`;
+exports.postQueryMessageTTSUrl = `${exports.aiServerUrl}/api/chat/tts`;
+exports.postSTTAudioUrl = `${exports.aiServerUrl}/api/chat/stt`;
+exports.postQueryImageUrl = `${exports.aiServerUrl}/api/chat/postQueryImage`;
