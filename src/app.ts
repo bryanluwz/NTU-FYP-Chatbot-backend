@@ -11,17 +11,30 @@ import mime from "mime-types";
 
 require("dotenv").config();
 
-// Make directories if they don't exist
+// Make directories for storing files
 const directories = [
-  path.resolve(process.cwd(), process.env.DATABASE_STORAGE || "test.db"),
   path.resolve(process.cwd(), process.env.AVATARS_STORAGE || "/avatars"),
   path.resolve(process.cwd(), process.env.DOCUMENTS_STORAGE || "documents"),
   path.resolve(process.cwd(), process.env.UPLOADS_STORAGE || "/uploads"),
   path.resolve(process.cwd(), process.env.TTS_STORAGE || "/tts"),
 ];
 
+// Check if test.db exists as a file
+const databaseFile = path.resolve(
+  process.cwd(),
+  process.env.DATABASE_STORAGE || "database.db"
+);
+
+if (fs.existsSync(databaseFile)) {
+  console.log("Database file already exists.");
+} else {
+  fs.writeFileSync(databaseFile, ""); // Create an empty file
+  console.log(`Created database file: ${databaseFile}`);
+}
+
+// Check if directories exist and create them if they don't
 if (directories.every((dir) => fs.existsSync(dir))) {
-  console.log("All storage has already existed.");
+  console.log("All storage directories already exist.");
 } else {
   directories.forEach((dir) => {
     if (dir) {
