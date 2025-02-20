@@ -1,6 +1,7 @@
 const portNumber = process.env.AI_PORT || 3001;
+const host = process.env.AI_HOST || "0.0.0.0";
 
-export const aiServerUrl = `https://0.0.0.0:${portNumber}`;
+export const aiServerUrl = `https://${host}:${portNumber}`;
 
 export const postQueryMessageUrl = `${aiServerUrl}/api/chat/query`;
 export const changeDocumentSrcUrl = `${aiServerUrl}/api/chat/transferDocumentSrc`;

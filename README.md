@@ -2,6 +2,10 @@
 
 This repository contains the backend implementation for the NTU Final Year Project (FYP) Chatbot. The backend is built using Express (TypeScript) for handling API requests from the frontend and processing chatbot logic.
 
+## Warning
+
+I might have messed up some of the code trying to get the Docker setup to work. If you encounter any issues, please let me know and I will not fix it, because I'm done with this project.
+
 ## Features
 
 The key features of the backend include:
@@ -22,7 +26,7 @@ The key features of the backend include:
 
 ## Setup and Installation
 
-The frontend code should already be built (see [frontend repository](https://github.com/bryanluwz/NTU-FYP-Chatbot-frontend) `dist` folder)
+The frontend code should already be built (see [frontend repository](https://github.com/bryanluwz/NTU-FYP-Chatbot-frontend) `dist` folder).
 
 Minimally, only the [frontend repository](https://github.com/bryanluwz/NTU-FYP-Chatbot-frontend) `dist` folder and backend repositories are required to run the full chatbot system.
 

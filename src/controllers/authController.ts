@@ -11,6 +11,7 @@ import {
   RegisterUserResponseModel,
 } from "../typings/authTypings";
 import { UserRoleEnum } from "../typings/enums";
+import fs from "fs";
 
 export const registerUser = async (
   req: Request,
@@ -42,11 +43,19 @@ export const registerUser = async (
     // Create and return JWT
     const payload = { userId: user.id };
 
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not defined in environment variables.");
+    let jwtSecret = undefined;
+
+    // Check if jwt_secret is defined in run/secrets/jwt_secret
+    if (fs.existsSync("/run/secrets/jwt_secret")) {
+      jwtSecret = fs.readFileSync("/run/secrets/jwt_secret", "utf8");
+    } else {
+      if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not defined in environment variables.");
+      }
+      jwtSecret = process.env.JWT_SECRET;
     }
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    const token = jwt.sign(payload, jwtSecret, {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
@@ -101,11 +110,19 @@ export const loginUser = async (
     // Create and return JWT
     const payload = { userId: user.id };
 
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not defined in environment variables.");
+    let jwtSecret = undefined;
+
+    // Check if jwt_secret is defined in run/secrets/jwt_secret
+    if (fs.existsSync("/run/secrets/jwt_secret")) {
+      jwtSecret = fs.readFileSync("/run/secrets/jwt_secret", "utf8");
+    } else {
+      if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is not defined in environment variables.");
+      }
+      jwtSecret = process.env.JWT_SECRET;
     }
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    const token = jwt.sign(payload, jwtSecret, {
       expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
@@ -174,11 +191,19 @@ export const authenticateToken = (
   if (!token)
     return res.status(401).json({ error: "Access denied. No token provided." });
 
-  if (!process.env.JWT_SECRET) {
-    return res.status(500).json({ error: "Server configuration error." });
+  let jwtSecret = undefined;
+
+  // Check if jwt_secret is defined in run/secrets/jwt_secret
+  if (fs.existsSync("/run/secrets/jwt_secret")) {
+    jwtSecret = fs.readFileSync("/run/secrets/jwt_secret", "utf8");
+  } else {
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not defined in environment variables.");
+    }
+    jwtSecret = process.env.JWT_SECRET;
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
+  jwt.verify(token, jwtSecret, async (err, user) => {
     if (err) {
       console.error(err.message);
       return res.status(403).json({ error: "Invalid token." });
