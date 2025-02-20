@@ -5,7 +5,7 @@ require("dotenv").config();
 
 const databaseStoragePath = path.resolve(
   process.cwd(),
-  process.env.DATABASE_STORAGE || "test.db"
+  process.env.DATABASE_STORAGE || "database.db"
 );
 
 // Initialize Sequelize to use SQLite

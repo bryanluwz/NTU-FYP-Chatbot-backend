@@ -84,6 +84,20 @@ Minimally, only the [frontend repository](https://github.com/bryanluwz/NTU-FYP-C
 
    This would create a bunch of JavaScript files in the `dist` folder that mirrors the `src` folder structure.
 
+## Docker
+
+You can also run the backend server using Docker.
+
+1. Please see the [main repository](https://github.com/bryanluwz/NTU-FYP-Chatbot) for the Docker setup.
+
+2. Please remove the `node_modules` folder before building the Docker image to reduce the image size. This can be achieved by just running:
+
+   ```bash
+   rm -rf node_modules
+   ```
+
+   in the backend repository. Or, you know, just delete it manually.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
