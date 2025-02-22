@@ -88,9 +88,14 @@ app.use("/api", authRoutes_1.default);
 app.use("/api", userRoute_1.default);
 app.use("/api", personaRoutes_1.default);
 // Host React frontend
-app.use(express_1.default.static(path_1.default.join(__dirname, process.env.FE_BUILD_PATH || "./frontend/build")));
+let feBuildPath = path_1.default.join(__dirname, process.env.FE_BUILD_PATH || "./frontend/build");
+if (!fs_1.default.existsSync(feBuildPath)) {
+    console.log("Frontend build path does not exist. Using development build path or whatever");
+    feBuildPath = path_1.default.join(__dirname, process.env.FE_BUILD_PATH_DEV || "./frontend/build");
+}
+app.use(express_1.default.static(path_1.default.join(feBuildPath)));
 app.get("/", (req, res) => {
     console.log("Serving frontend...");
-    res.sendFile(path_1.default.join(__dirname, process.env.FE_BUILD_PATH || "./frontend/build", "index.html"));
+    res.sendFile(path_1.default.join(feBuildPath, "index.html"));
 });
 exports.default = app;

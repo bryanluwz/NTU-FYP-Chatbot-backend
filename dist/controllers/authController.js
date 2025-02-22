@@ -17,6 +17,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const User_1 = require("../models/User");
 const enums_1 = require("../typings/enums");
+const fs_1 = __importDefault(require("fs"));
 const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, email, password } = req.body;
     // Basic validation
@@ -39,10 +40,18 @@ const registerUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
         // Create and return JWT
         const payload = { userId: user.id };
-        if (!process.env.JWT_SECRET) {
-            throw new Error("JWT_SECRET is not defined in environment variables.");
+        let jwtSecret = undefined;
+        // Check if jwt_secret is defined in run/secrets/jwt_secret
+        if (fs_1.default.existsSync("/run/secrets/jwt_secret")) {
+            jwtSecret = fs_1.default.readFileSync("/run/secrets/jwt_secret", "utf8");
         }
-        const token = jsonwebtoken_1.default.sign(payload, process.env.JWT_SECRET, {
+        else {
+            if (!process.env.JWT_SECRET) {
+                throw new Error("JWT_SECRET is not defined in environment variables.");
+            }
+            jwtSecret = process.env.JWT_SECRET;
+        }
+        const token = jsonwebtoken_1.default.sign(payload, jwtSecret, {
             expiresIn: process.env.JWT_EXPIRES_IN,
         });
         res.json({
@@ -88,10 +97,18 @@ const loginUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(400).json({ error: "Invalid credentials." });
         // Create and return JWT
         const payload = { userId: user.id };
-        if (!process.env.JWT_SECRET) {
-            throw new Error("JWT_SECRET is not defined in environment variables.");
+        let jwtSecret = undefined;
+        // Check if jwt_secret is defined in run/secrets/jwt_secret
+        if (fs_1.default.existsSync("/run/secrets/jwt_secret")) {
+            jwtSecret = fs_1.default.readFileSync("/run/secrets/jwt_secret", "utf8");
         }
-        const token = jsonwebtoken_1.default.sign(payload, process.env.JWT_SECRET, {
+        else {
+            if (!process.env.JWT_SECRET) {
+                throw new Error("JWT_SECRET is not defined in environment variables.");
+            }
+            jwtSecret = process.env.JWT_SECRET;
+        }
+        const token = jsonwebtoken_1.default.sign(payload, jwtSecret, {
             expiresIn: process.env.JWT_EXPIRES_IN,
         });
         res.json({
@@ -152,10 +169,18 @@ const authenticateToken = (req, res, next) => {
     const token = authHeader && authHeader.split(" ")[1]; // Get token from "Bearer TOKEN" format
     if (!token)
         return res.status(401).json({ error: "Access denied. No token provided." });
-    if (!process.env.JWT_SECRET) {
-        return res.status(500).json({ error: "Server configuration error." });
+    let jwtSecret = undefined;
+    // Check if jwt_secret is defined in run/secrets/jwt_secret
+    if (fs_1.default.existsSync("/run/secrets/jwt_secret")) {
+        jwtSecret = fs_1.default.readFileSync("/run/secrets/jwt_secret", "utf8");
     }
-    jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET, (err, user) => __awaiter(void 0, void 0, void 0, function* () {
+    else {
+        if (!process.env.JWT_SECRET) {
+            throw new Error("JWT_SECRET is not defined in environment variables.");
+        }
+        jwtSecret = process.env.JWT_SECRET;
+    }
+    jsonwebtoken_1.default.verify(token, jwtSecret, (err, user) => __awaiter(void 0, void 0, void 0, function* () {
         if (err) {
             console.error(err.message);
             return res.status(403).json({ error: "Invalid token." });

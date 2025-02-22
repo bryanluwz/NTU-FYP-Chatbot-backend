@@ -115,21 +115,26 @@ app.use("/api", UserRouter);
 app.use("/api", PersonaRouter);
 
 // Host React frontend
-app.use(
-  express.static(
-    path.join(__dirname, process.env.FE_BUILD_PATH || "./frontend/build")
-  )
+let feBuildPath = path.join(
+  __dirname,
+  process.env.FE_BUILD_PATH || "./frontend/build"
 );
+
+if (!fs.existsSync(feBuildPath)) {
+  console.log(
+    "Frontend build path does not exist. Using development build path or whatever"
+  );
+  feBuildPath = path.join(
+    __dirname,
+    process.env.FE_BUILD_PATH_DEV || "./frontend/build"
+  );
+}
+
+app.use(express.static(path.join(feBuildPath)));
 
 app.get("/", (req, res) => {
   console.log("Serving frontend...");
-  res.sendFile(
-    path.join(
-      __dirname,
-      process.env.FE_BUILD_PATH || "./frontend/build",
-      "index.html"
-    )
-  );
+  res.sendFile(path.join(feBuildPath, "index.html"));
 });
 
 export default app;
