@@ -11,6 +11,7 @@ import {
 } from "./typings";
 import {
   changeDocumentSrcUrl,
+  getQueryVoicesUrl,
   postQueryImageUrl,
   postQueryMessageTTSUrl,
   postQueryMessageUrl,
@@ -138,4 +139,12 @@ export const postQueryImageApi = async (
   const blob = await response.blob();
 
   return blob;
+};
+
+export const getQueryVoicesApi = async () => {
+  return (
+    await fetch(getQueryVoicesUrl, {
+      method: "GET",
+    })
+  ).json() as unknown as { data: { response: string[] } };
 };

@@ -17,6 +17,7 @@ import { Chat } from "../models/Chat";
 import { Persona } from "../models/Persona";
 import { PersonaModel } from "../typings/dashboardTypings";
 import {
+  getQueryVoicesApi,
   postQueryImageApi,
   postQueryMessageApi,
   postQueryMessageTTSApi,
@@ -668,5 +669,25 @@ export const postSTTAudio = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error(err.message);
     return res.status(500).json({ error: "Failed to get STT function" });
+  }
+};
+
+export const getQueryVoices = async (req: Request, res: Response) => {
+  // Get voices from AI server
+  try {
+    const response = await getQueryVoicesApi();
+    const voices = response.data.response;
+    return res.json({
+      status: {
+        code: 200,
+        message: "OK",
+      },
+      data: {
+        response: voices,
+      },
+    });
+  } catch (err: any) {
+    console.error(err.message);
+    return res.status(500).json({ error: "Failed to get voices" });
   }
 };

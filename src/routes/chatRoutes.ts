@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getChatList,
+  getQueryVoices,
   postQueryMessage,
   postQueryMessageTTS,
   postSTTAudio,
@@ -9,6 +10,7 @@ import {
   uploadQueryFilesMiddleware,
 } from "../controllers/chatController";
 import { authenticateToken } from "../controllers/authController";
+import { Chat } from "../models";
 
 const ChatRouter = express.Router();
 
@@ -28,5 +30,6 @@ ChatRouter.post(
   postSTTAudioMulterMiddleware,
   postSTTAudio
 ); // url a bit out of place haha
+ChatRouter.get("/chat/voices", authenticateToken, getQueryVoices);
 
 export default ChatRouter;

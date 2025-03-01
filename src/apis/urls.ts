@@ -8,3 +8,4 @@ export const changeDocumentSrcUrl = `${aiServerUrl}/api/chat/transferDocumentSrc
 export const postQueryMessageTTSUrl = `${aiServerUrl}/api/chat/tts`;
 export const postSTTAudioUrl = `${aiServerUrl}/api/chat/stt`;
 export const postQueryImageUrl = `${aiServerUrl}/api/chat/postQueryImage`;
+export const getQueryVoicesUrl = `${aiServerUrl}/api/chat/availableVoices`;
