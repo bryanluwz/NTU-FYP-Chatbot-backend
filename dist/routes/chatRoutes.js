@@ -13,4 +13,5 @@ ChatRouter.post("/chat", authController_1.authenticateToken, chatController_1.up
 ChatRouter.post("/chat/message", authController_1.authenticateToken, chatController_1.uploadQueryFilesMiddleware, chatController_1.postQueryMessage);
 ChatRouter.post("/chat/message/tts", authController_1.authenticateToken, chatController_1.postQueryMessageTTS);
 ChatRouter.post("/stt/audio", authController_1.authenticateToken, chatController_1.postSTTAudioMulterMiddleware, chatController_1.postSTTAudio); // url a bit out of place haha
+ChatRouter.get("/chat/voices", authController_1.authenticateToken, chatController_1.getQueryVoices);
 exports.default = ChatRouter;

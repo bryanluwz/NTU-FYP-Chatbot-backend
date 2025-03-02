@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postQueryImageApi = exports.postSTTAudioApi = exports.postQueryMessageTTSApi = exports.transferDocumentSrcApi = exports.postQueryMessageApi = void 0;
+exports.getQueryVoicesApi = exports.postQueryImageApi = exports.postSTTAudioApi = exports.postQueryMessageTTSApi = exports.transferDocumentSrcApi = exports.postQueryMessageApi = void 0;
 const urls_1 = require("./urls");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
@@ -100,3 +100,9 @@ const postQueryImageApi = (data) => __awaiter(void 0, void 0, void 0, function* 
     return blob;
 });
 exports.postQueryImageApi = postQueryImageApi;
+const getQueryVoicesApi = () => __awaiter(void 0, void 0, void 0, function* () {
+    return (yield fetch(urls_1.getQueryVoicesUrl, {
+        method: "GET",
+    })).json();
+});
+exports.getQueryVoicesApi = getQueryVoicesApi;

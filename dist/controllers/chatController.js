@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postSTTAudio = exports.postSTTAudioMulterMiddleware = exports.postQueryMessageTTS = exports.postQueryMessage = exports.uploadQueryFilesMiddleware = exports.updateChatInfo = exports.getChatList = void 0;
+exports.getQueryVoices = exports.postSTTAudio = exports.postSTTAudioMulterMiddleware = exports.postQueryMessageTTS = exports.postQueryMessage = exports.uploadQueryFilesMiddleware = exports.updateChatInfo = exports.getChatList = void 0;
 const enums_1 = require("../typings/enums");
 const uuid_1 = require("uuid");
 const Chat_1 = require("../models/Chat");
@@ -537,3 +537,24 @@ const postSTTAudio = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.postSTTAudio = postSTTAudio;
+const getQueryVoices = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // Get voices from AI server
+    try {
+        const response = yield (0, apis_1.getQueryVoicesApi)();
+        const voices = response.data.response;
+        return res.json({
+            status: {
+                code: 200,
+                message: "OK",
+            },
+            data: {
+                response: voices,
+            },
+        });
+    }
+    catch (err) {
+        console.error(err.message);
+        return res.status(500).json({ error: "Failed to get voices" });
+    }
+});
+exports.getQueryVoices = getQueryVoices;
