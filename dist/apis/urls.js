@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getQueryVoicesUrl = exports.postQueryImageUrl = exports.postSTTAudioUrl = exports.postQueryMessageTTSUrl = exports.changeDocumentSrcUrl = exports.postQueryMessageUrl = exports.aiServerUrl = void 0;
-const portNumber = process.env.AI_PORT || 3001;
 const host = process.env.AI_HOST || "0.0.0.0";
+const portNumber = process.env.AI_PORT || 3001;
 exports.aiServerUrl = `https://${host}:${portNumber}`;
 exports.postQueryMessageUrl = `${exports.aiServerUrl}/api/chat/query`;
 exports.changeDocumentSrcUrl = `${exports.aiServerUrl}/api/chat/transferDocumentSrc`;
