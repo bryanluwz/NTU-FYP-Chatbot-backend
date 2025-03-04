@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from "fs";
 
 let host: string;
 if (existsSync("/run/secrets/python_server_endpoint")) {
+  // I deleted the secret in the docker-compose file so it will always use the default value (compose / .env)
   host = readFileSync("/run/secrets/python_server_endpoint", "utf-8").trim();
   console.log("Python server endpoint via secrets: ", host);
 } else {
