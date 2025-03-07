@@ -2,10 +2,6 @@
 
 This repository contains the backend implementation for the NTU Final Year Project (FYP) Chatbot. The backend is built using Express (TypeScript) for handling API requests from the frontend and processing chatbot logic.
 
-## Warning
-
-I might have messed up some of the code trying to get the Docker setup to work. If you encounter any issues, please let me know and I will not fix it, because I'm done with this project.
-
 ## Features
 
 The key features of the backend include:
